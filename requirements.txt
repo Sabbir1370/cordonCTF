@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+pyjwt
+passlib[bcrypt]
+python-multipart
+pymysql
+aiomysql
+jinja2
