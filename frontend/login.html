@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CordonCTF - Login</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>CordonCTF</h1>
+      <h2>Login</h2>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div id="errorMessage" class="error" style="display: none"></div>
+
+        <button type="submit">Login</button>
+      </form>
+
+      <p class="link-text">
+        Don't have an account? <a href="register.html">Register</a>
+      </p>
+      <p class="link-text">
+        <a href="index.html">← Back to Home</a>
+      </p>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      const form = document.getElementById("loginForm");
+      const errorDiv = document.getElementById("errorMessage");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorDiv.style.display = "none";
+
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value;
+
+        try {
+          const result = await loginUser(username, password);
+
+          // Redirect based on role
+          if (result.role === "admin") {
+            window.location.href = "admin.html";
+          } else {
+            window.location.href = "dashboard.html";
+          }
+        } catch (err) {
+          errorDiv.textContent = err.message;
+          errorDiv.style.display = "block";
+        }
+      });
+    </script>
+  </body>
+</html>

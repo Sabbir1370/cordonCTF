@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CordonCTF - Offline CTF Platform</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>CordonCTF</h1>
+        <nav>
+          <a href="login.html">Login</a>
+          <a href="register.html">Register</a>
+        </nav>
+      </header>
+
+      <section class="status-bar">
+        <div>Event Status: <strong id="eventStatus">Loading...</strong></div>
+        <div>Participants: <strong id="totalParticipants">0</strong></div>
+        <div>Challenges: <strong id="totalChallenges">0</strong></div>
+        <div>Solves: <strong id="totalSolves">0</strong></div>
+      </section>
+
+      <section class="scoreboard">
+        <h2>Scoreboard</h2>
+        <div id="scoreboardTable">Loading...</div>
+      </section>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+      // Fetch event status, stats, and scoreboard when the page loads
+      window.addEventListener("DOMContentLoaded", () => {
+        loadEventStatus();
+        loadStats();
+        loadScoreboard();
+      });
+
+      async function loadEventStatus() {
+        try {
+          const data = await api("GET", "/api/event/status");
+          document.getElementById("eventStatus").textContent =
+            data.status.toUpperCase();
+        } catch (err) {
+          document.getElementById("eventStatus").textContent = "Error";
+        }
+      }
+
+      async function loadStats() {
+        try {
+          const stats = await api("GET", "/api/stats");
+          document.getElementById("totalParticipants").textContent =
+            stats.total_participants;
+          document.getElementById("totalChallenges").textContent =
+            stats.total_challenges;
+          document.getElementById("totalSolves").textContent =
+            stats.total_solves;
+        } catch (err) {
+          // keep zeros
+        }
+      }
+
+      async function loadScoreboard() {
+        try {
+          const board = await api("GET", "/api/scoreboard");
+          const table = document.getElementById("scoreboardTable");
+          if (board.length === 0) {
+            table.innerHTML = "<p>No players yet.</p>";
+            return;
+          }
+          let html =
+            "<table><tr><th>Rank</th><th>Username</th><th>Score</th><th>Solves</th></tr>";
+          board.forEach((entry) => {
+            html += `<tr>
+                        <td>${entry.rank}</td>
+                        <td>${entry.username}</td>
+                        <td>${entry.score}</td>
+                        <td>${entry.solve_count}</td>
+                    </tr>`;
+          });
+          html += "</table>";
+          table.innerHTML = html;
+        } catch (err) {
+          document.getElementById("scoreboardTable").textContent =
+            "Failed to load scoreboard.";
+        }
+      }
+    </script>
+  </body>
+</html>

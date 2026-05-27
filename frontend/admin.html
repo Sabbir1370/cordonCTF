@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CordonCTF - Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>CordonCTF – Admin Panel</h1>
+        <button onclick="logout()">Logout</button>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="challenges">Challenges</button>
+        <button class="tab" data-tab="users">Users</button>
+        <button class="tab" data-tab="submissions">Submissions</button>
+        <button class="tab" data-tab="event">Event Control</button>
+      </nav>
+
+      <!-- Challenges Tab -->
+      <section id="tab-challenges" class="tab-content active">
+        <h3>Create Challenge</h3>
+        <form id="challengeForm">
+          <input type="text" id="chTitle" placeholder="Title" required />
+          <textarea id="chDesc" placeholder="Description"></textarea>
+          <select id="chCategory" required></select>
+          <input type="number" id="chPoints" placeholder="Points" required />
+          <input
+            type="text"
+            id="chFlag"
+            placeholder="Flag (e.g., FLAG{...})"
+            required
+          />
+          <input type="file" id="chFile" />
+          <button type="submit">Create Challenge</button>
+          <span id="chCreateMsg"></span>
+        </form>
+
+        <h3>Existing Challenges</h3>
+        <div id="challengeList"></div>
+      </section>
+
+      <!-- Users Tab -->
+      <section id="tab-users" class="tab-content">
+        <h3>All Users</h3>
+        <div id="userList"></div>
+      </section>
+
+      <!-- Submissions Tab -->
+      <section id="tab-submissions" class="tab-content">
+        <h3>Submissions</h3>
+        <div>
+          <input type="number" id="subUserId" placeholder="Filter by User ID" />
+          <input
+            type="number"
+            id="subChallengeId"
+            placeholder="Filter by Challenge ID"
+          />
+          <button id="subFilterBtn">Filter</button>
+        </div>
+        <div id="submissionList"></div>
+      </section>
+
+      <!-- Event Control Tab -->
+      <section id="tab-event" class="tab-content">
+        <h3>Event Status</h3>
+        <div id="eventStatus"></div>
+        <button id="startEventBtn">Start Event</button>
+        <button id="stopEventBtn">Stop Event</button>
+        <h3>Reset Scoreboard</h3>
+        <button id="resetScoreboardBtn" style="background-color: #d9534f">
+          Reset All Scores
+        </button>
+      </section>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      requireAuth();
+      if (getCurrentUserRole() !== "admin") {
+        alert("Admin access required");
+        logout();
+      }
+
+      // Tab switching
+      document.querySelectorAll(".tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".tab-content")
+            .forEach((c) => c.classList.remove("active"));
+          btn.classList.add("active");
+          document
+            .getElementById("tab-" + btn.dataset.tab)
+            .classList.add("active");
+          if (btn.dataset.tab === "users") loadUsers();
+          if (btn.dataset.tab === "submissions") loadSubmissions();
+          if (btn.dataset.tab === "event") loadEventStatus();
+          if (btn.dataset.tab === "challenges") loadChallenges();
+        });
+      });
+
+      // Load initial data
+      loadCategoriesIntoSelect();
+      loadChallenges();
+
+      // ─── Challenges ────────────────────────────────────────
+      async function loadCategoriesIntoSelect() {
+        try {
+          const cats = await api("GET", "/api/categories");
+          const select = document.getElementById("chCategory");
+          select.innerHTML = cats
+            .map((c) => `<option value="${c.id}">${c.name}</option>`)
+            .join("");
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function loadChallenges() {
+        try {
+          const list = await api("GET", "/api/challenges");
+          const div = document.getElementById("challengeList");
+          if (list.length) {
+            div.innerHTML = list
+              .map(
+                (ch) => `
+                        <div class="challenge-card">
+                            <strong>${ch.title}</strong> (${ch.points} pts) - ${ch.category}
+                            <button onclick="editChallenge(${ch.id})">Edit</button>
+                            <button onclick="deleteChallenge(${ch.id})">Delete</button>
+                        </div>
+                    `,
+              )
+              .join("");
+          } else {
+            div.innerHTML = "<p>No challenges yet.</p>";
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      document
+        .getElementById("challengeForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData();
+          formData.append("title", document.getElementById("chTitle").value);
+          formData.append(
+            "description",
+            document.getElementById("chDesc").value,
+          );
+          formData.append(
+            "category_id",
+            document.getElementById("chCategory").value,
+          );
+          formData.append("points", document.getElementById("chPoints").value);
+          formData.append("flag", document.getElementById("chFlag").value);
+          const file = document.getElementById("chFile").files[0];
+          if (file) formData.append("file", file);
+
+          try {
+            const res = await api("POST", "/api/admin/challenges", formData);
+            document.getElementById("chCreateMsg").textContent =
+              "Challenge created! ID: " + res.challenge_id;
+            loadChallenges();
+          } catch (err) {
+            document.getElementById("chCreateMsg").textContent = err.message;
+          }
+        });
+
+      async function deleteChallenge(id) {
+        if (!confirm("Delete this challenge?")) return;
+        try {
+          await api("DELETE", `/api/admin/challenges/${id}`);
+          loadChallenges();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      async function editChallenge(id) {
+        // Simple prompt-based edit (can be enhanced)
+        const points = prompt("New points:");
+        if (points) {
+          const formData = new FormData();
+          formData.append("points", parseInt(points));
+          await api("PUT", `/api/admin/challenges/${id}`, formData);
+          loadChallenges();
+        }
+      }
+
+      // ─── Users ──────────────────────────────────────────────
+      async function loadUsers() {
+        try {
+          const users = await api("GET", "/api/admin/users");
+          const div = document.getElementById("userList");
+          div.innerHTML = users
+            .map(
+              (u) => `
+                    <div>
+                        ${u.id} - ${u.username} (${u.role}) Score: ${u.score}
+                        <button onclick="deleteUser(${u.id})">Delete</button>
+                    </div>
+                `,
+            )
+            .join("");
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function deleteUser(id) {
+        if (!confirm("Delete this user? All their data will be lost.")) return;
+        try {
+          await api("DELETE", `/api/admin/users/${id}`);
+          loadUsers();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      // ─── Submissions ────────────────────────────────────────
+      async function loadSubmissions(userId = null, challengeId = null) {
+        try {
+          let url = "/api/admin/submissions?";
+          if (userId) url += `user_id=${userId}&`;
+          if (challengeId) url += `challenge_id=${challengeId}&`;
+          const subs = await api("GET", url);
+          const div = document.getElementById("submissionList");
+          div.innerHTML = subs.length
+            ? subs
+                .map(
+                  (s) => `
+                    <div>
+                        [${new Date(s.submitted_at).toLocaleString()}] ${s.username} on ${s.challenge_title}:
+                        ${s.submitted_flag} (${s.is_correct ? "Correct" : "Wrong"} +${s.points_awarded} pts)
+                    </div>
+                `,
+                )
+                .join("")
+            : "<p>No submissions.</p>";
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      document.getElementById("subFilterBtn").addEventListener("click", () => {
+        const uid = document.getElementById("subUserId").value;
+        const cid = document.getElementById("subChallengeId").value;
+        loadSubmissions(uid || null, cid || null);
+      });
+
+      // ─── Event Control ──────────────────────────────────────
+      async function loadEventStatus() {
+        try {
+          const status = await api("GET", "/api/event/status");
+          document.getElementById("eventStatus").textContent =
+            "Current status: " + status.status;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      document
+        .getElementById("startEventBtn")
+        .addEventListener("click", async () => {
+          await api("PUT", "/api/admin/event/start");
+          loadEventStatus();
+        });
+
+      document
+        .getElementById("stopEventBtn")
+        .addEventListener("click", async () => {
+          await api("PUT", "/api/admin/event/stop");
+          loadEventStatus();
+        });
+
+      document
+        .getElementById("resetScoreboardBtn")
+        .addEventListener("click", async () => {
+          if (
+            !confirm(
+              "This will delete ALL submissions and reset all scores. Are you sure?",
+            )
+          )
+            return;
+          await api("POST", "/api/admin/scoreboard/reset");
+          alert("Scoreboard reset complete.");
+        });
+    </script>
+  </body>
+</html>

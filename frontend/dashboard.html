@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CordonCTF - Player Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>CordonCTF</h1>
+        <div id="userInfo">
+          <span id="usernameDisplay"></span> | Score:
+          <span id="scoreDisplay">0</span>
+          <button onclick="logout()">Logout</button>
+        </div>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="challenges">Challenges</button>
+        <button class="tab" data-tab="solves">My Solves</button>
+        <button class="tab" data-tab="scoreboard">Scoreboard</button>
+      </nav>
+
+      <!-- Challenges Tab -->
+      <section id="tab-challenges" class="tab-content active">
+        <div class="categories">
+          <h3>Categories</h3>
+          <div id="categoryList" class="category-list"></div>
+        </div>
+        <div class="challenges">
+          <h3>Challenges</h3>
+          <div id="challengeList"></div>
+        </div>
+        <div
+          id="challengeDetail"
+          class="challenge-detail"
+          style="display: none"
+        >
+          <h3 id="detailTitle"></h3>
+          <p><strong>Category:</strong> <span id="detailCategory"></span></p>
+          <p><strong>Points:</strong> <span id="detailPoints"></span></p>
+          <p>
+            <strong>Description:</strong> <span id="detailDescription"></span>
+          </p>
+          <p id="detailFile" style="display: none">
+            <a id="detailFileLink" href="#">Download Challenge File</a>
+          </p>
+          <p id="detailSolved" class="solved-badge" style="display: none">
+            ✅ Solved
+          </p>
+          <div id="submitForm" class="flag-submit">
+            <input type="text" id="flagInput" placeholder="FLAG{...}" />
+            <button id="submitFlagBtn">Submit Flag</button>
+            <span id="submitMessage"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- My Solves Tab -->
+      <section id="tab-solves" class="tab-content">
+        <h3>My Solves</h3>
+        <div id="solvesList"></div>
+      </section>
+
+      <!-- Scoreboard Tab -->
+      <section id="tab-scoreboard" class="tab-content">
+        <h3>Scoreboard</h3>
+        <div id="scoreboardTable"></div>
+      </section>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      // Require authentication
+      requireAuth();
+
+      // Display username & score on top
+      const usernameDisplay = document.getElementById("usernameDisplay");
+      const scoreDisplay = document.getElementById("scoreDisplay");
+      usernameDisplay.textContent = localStorage.getItem("username");
+      updateScore();
+
+      // Tab switching
+      document.querySelectorAll(".tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelectorAll(".tab-content")
+            .forEach((c) => c.classList.remove("active"));
+          btn.classList.add("active");
+          document
+            .getElementById("tab-" + btn.dataset.tab)
+            .classList.add("active");
+          if (btn.dataset.tab === "solves") loadSolves();
+          if (btn.dataset.tab === "scoreboard") loadScoreboard();
+        });
+      });
+
+      // Load categories and challenges on page load
+      loadCategories();
+      loadChallenges();
+
+      // ─── Functions ────────────────────────────────────────
+
+      async function updateScore() {
+        try {
+          const data = await api("GET", "/api/me/score");
+          scoreDisplay.textContent = data.score;
+        } catch (err) {
+          /* ignore */
+        }
+      }
+
+      async function loadCategories() {
+        try {
+          const categories = await api("GET", "/api/categories");
+          const catList = document.getElementById("categoryList");
+          catList.innerHTML = categories
+            .map(
+              (cat) =>
+                `<button class="category-btn" data-catid="${cat.id}">${cat.name}</button>`,
+            )
+            .join("");
+          document.querySelectorAll(".category-btn").forEach((btn) => {
+            btn.addEventListener("click", () =>
+              loadChallenges(btn.dataset.catid),
+            );
+          });
+        } catch (err) {
+          console.error("Failed to load categories:", err);
+        }
+      }
+
+      async function loadChallenges(categoryId = null) {
+        try {
+          let url = "/api/challenges";
+          if (categoryId) url += "?category=" + categoryId;
+          const challenges = await api("GET", url);
+          const list = document.getElementById("challengeList");
+          list.innerHTML = challenges.length
+            ? challenges
+                .map(
+                  (ch) => `
+                    <div class="challenge-card ${ch.solved ? "solved" : ""}">
+                        <strong>${ch.title}</strong> (${ch.points} pts) - ${ch.category}
+                        ${ch.solved ? " ✅" : ""}
+                        <button onclick="viewChallenge(${ch.id})">View</button>
+                    </div>
+                `,
+                )
+                .join("")
+            : "<p>No challenges in this category.</p>";
+        } catch (err) {
+          console.error("Failed to load challenges:", err);
+        }
+      }
+
+      async function viewChallenge(id) {
+        try {
+          const ch = await api("GET", "/api/challenges/" + id);
+          document.getElementById("challengeDetail").style.display = "block";
+          document.getElementById("detailTitle").textContent = ch.title;
+          document.getElementById("detailCategory").textContent = ch.category;
+          document.getElementById("detailPoints").textContent = ch.points;
+          document.getElementById("detailDescription").textContent =
+            ch.description || "No description.";
+          const fileDiv = document.getElementById("detailFile");
+          const fileLink = document.getElementById("detailFileLink");
+          if (ch.file_exists) {
+            fileDiv.style.display = "block";
+            fileLink.href = `${API_BASE}/api/challenges/${id}/download`;
+            fileLink.textContent = "Download attached file";
+          } else {
+            fileDiv.style.display = "none";
+          }
+          const solvedBadge = document.getElementById("detailSolved");
+          const submitForm = document.getElementById("submitForm");
+          if (ch.solved) {
+            solvedBadge.style.display = "block";
+            submitForm.style.display = "none";
+          } else {
+            solvedBadge.style.display = "none";
+            submitForm.style.display = "block";
+            document.getElementById("flagInput").value = "";
+            document.getElementById("submitMessage").textContent = "";
+          }
+          // Store current challenge ID for submission
+          document.getElementById("submitFlagBtn").onclick = () =>
+            submitFlag(id);
+        } catch (err) {
+          console.error("Failed to load challenge:", err);
+        }
+      }
+
+      async function submitFlag(challengeId) {
+        const flag = document.getElementById("flagInput").value.trim();
+        const msg = document.getElementById("submitMessage");
+        if (!flag) return;
+        try {
+          const res = await api("POST", "/api/submit", {
+            challenge_id: challengeId,
+            flag,
+          });
+          msg.textContent = res.message;
+          if (res.correct) {
+            msg.style.color = "green";
+            updateScore();
+            loadChallenges(); // refresh solved status
+            document.getElementById("detailSolved").style.display = "block";
+            document.getElementById("submitForm").style.display = "none";
+          } else {
+            msg.style.color = "red";
+          }
+        } catch (err) {
+          msg.textContent = err.message;
+          msg.style.color = "red";
+        }
+      }
+
+      async function loadSolves() {
+        try {
+          const solves = await api("GET", "/api/me/solves");
+          const list = document.getElementById("solvesList");
+          if (solves.length) {
+            list.innerHTML = solves
+              .map(
+                (s) => `
+                        <div class="solve-entry">
+                            ${s.title} - ${s.points} pts (solved at ${new Date(s.solved_at).toLocaleString()})
+                        </div>
+                    `,
+              )
+              .join("");
+          } else {
+            list.innerHTML = "<p>No solves yet.</p>";
+          }
+        } catch (err) {
+          console.error("Failed to load solves:", err);
+        }
+      }
+
+      async function loadScoreboard() {
+        try {
+          const board = await api("GET", "/api/scoreboard");
+          const table = document.getElementById("scoreboardTable");
+          if (board.length) {
+            table.innerHTML = `
+                        <table>
+                            <tr><th>Rank</th><th>Username</th><th>Score</th><th>Solves</th></tr>
+                            ${board
+                              .map(
+                                (entry) => `
+                                <tr>
+                                    <td>${entry.rank}</td>
+                                    <td>${entry.username}</td>
+                                    <td>${entry.score}</td>
+                                    <td>${entry.solve_count}</td>
+                                </tr>
+                            `,
+                              )
+                              .join("")}
+                        </table>
+                    `;
+          } else {
+            table.innerHTML = "<p>Scoreboard is empty.</p>";
+          }
+        } catch (err) {
+          console.error("Failed to load scoreboard:", err);
+        }
+      }
+    </script>
+  </body>
+</html>

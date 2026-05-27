@@ -12,7 +12,8 @@ def get_connection():
         database=DB_NAME,
         port=DB_PORT,
         cursorclass=DictCursor,
-        autocommit=True
+        autocommit=True,
+        ssl=None
     )
 
 def get_db():
