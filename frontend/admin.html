@@ -205,9 +205,10 @@
           div.innerHTML = users
             .map(
               (u) => `
-                    <div>
+                    <div style="margin-bottom:8px;">
                         ${u.id} - ${u.username} (${u.role}) Score: ${u.score}
                         <button onclick="deleteUser(${u.id})">Delete</button>
+                        <button onclick="promptResetPassword(${u.id}, '${u.username}')">Reset Password</button>
                     </div>
                 `,
             )
@@ -224,6 +225,19 @@
           loadUsers();
         } catch (err) {
           alert(err.message);
+        }
+      }
+
+      async function promptResetPassword(userId, username) {
+        const newPass = prompt(`Enter new password for ${username}:`);
+        if (!newPass) return;
+        try {
+          await api("POST", `/api/admin/users/${userId}/reset-password`, {
+            new_password: newPass,
+          });
+          alert("Password reset successfully.");
+        } catch (err) {
+          alert("Error: " + err.message);
         }
       }
 

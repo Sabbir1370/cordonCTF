@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
-from ..models import SolveEntry, MeScoreResponse
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
+from ..models import SolveEntry, MeScoreResponse, MessageResponse
 from ..database import get_db
 from ..dependencies import get_current_user
+from ..auth import verify_password, hash_password
 
 router = APIRouter(prefix="/api/me", tags=["User"])
 
@@ -24,3 +26,25 @@ def my_score(cursor=Depends(get_db), current_user: dict = Depends(get_current_us
     )
     user = cursor.fetchone()
     return MeScoreResponse(**user)
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.put("/password", response_model=MessageResponse)
+def change_password(
+    req: ChangePasswordRequest,
+    cursor = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    # Verify current password
+    cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user["id"],))
+    user = cursor.fetchone()
+    if not verify_password(req.current_password, user["password_hash"]):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+
+    # Hash and update new password
+    hashed = hash_password(req.new_password)
+    cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hashed, current_user["id"]))
+
+    return {"message": "Password changed successfully"}

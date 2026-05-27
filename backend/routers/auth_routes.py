@@ -7,22 +7,19 @@ router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=MessageResponse)
 def register(req: RegisterRequest, cursor=Depends(get_db)):
-    # Reject invalid roles early
-    if req.role not in ("player", "admin"):
-        raise HTTPException(status_code=400, detail="Role must be 'player' or 'admin'")
-
     # Check for duplicate username
     cursor.execute("SELECT id FROM users WHERE username = %s", (req.username,))
     if cursor.fetchone():
         raise HTTPException(status_code=409, detail="Username already exists")
 
-    # Hash password and insert user
+    # Always register as a player – admin role cannot be self-assigned
+    role = "player"
+
     hashed = hash_password(req.password)
     cursor.execute(
         "INSERT INTO users (username, password_hash, role) VALUES (%s, %s, %s)",
-        (req.username, hashed, req.role)
+        (req.username, hashed, role)
     )
-
     return {"message": "Account created successfully"}
 
 @router.post("/login", response_model=TokenResponse)

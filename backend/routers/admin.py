@@ -1,14 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
+from pydantic import BaseModel
 from ..models import (
     MessageResponse, UserResponse, SubmissionResponse
 )
 from ..database import get_db
 from ..dependencies import get_current_user, admin_required
+from ..auth import hash_password
 from ..config import UPLOAD_FOLDER
 import os
 import shutil
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
+class RoleUpdateRequest(BaseModel):
+    role: str   # "player" or "admin"
+class ResetPasswordRequest(BaseModel):
+    new_password: str
 
 # ── Challenge CRUD ──
 @router.post("/challenges", status_code=201, response_model=dict)
@@ -124,6 +130,41 @@ def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
     return {"message": "User deleted"}
+
+@router.put("/users/{user_id}/role", response_model=MessageResponse)
+def update_user_role(
+    user_id: int,
+    req: RoleUpdateRequest,
+    cursor = Depends(get_db),
+    _admin: dict = Depends(admin_required)
+):
+    if req.role not in ("player", "admin"):
+        raise HTTPException(status_code=400, detail="Role must be 'player' or 'admin'")
+
+    cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+    if not cursor.fetchone():
+        raise HTTPException(status_code=404, detail="User not found")
+
+    cursor.execute("UPDATE users SET role = %s WHERE id = %s", (req.role, user_id))
+    return {"message": f"User role updated to {req.role}"}
+
+@router.post("/users/{user_id}/reset-password", response_model=MessageResponse)
+def reset_user_password(
+    user_id: int,
+    req: ResetPasswordRequest,
+    cursor = Depends(get_db),
+    _admin: dict = Depends(admin_required)
+):
+    # Check user exists
+    cursor.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+    if not cursor.fetchone():
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Hash the new password and update
+    hashed = hash_password(req.new_password)
+    cursor.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hashed, user_id))
+
+    return {"message": "Password reset successfully"}
 
 # ── Submissions ──
 @router.get("/submissions", response_model=list[SubmissionResponse])
