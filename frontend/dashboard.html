@@ -45,12 +45,13 @@
           <p>
             <strong>Description:</strong> <span id="detailDescription"></span>
           </p>
-          <p id="detailFile" style="display: none">
-            <a id="detailFileLink" href="#">Download Challenge File</a>
-          </p>
+          <div id="detailFile" style="display: none">
+            <button id="detailFileBtn">Download Challenge File</button>
+          </div>
           <p id="detailSolved" class="solved-badge" style="display: none">
             ✅ Solved
           </p>
+          <p id="detailAttempts" style="display: none"></p>
           <div id="submitForm" class="flag-submit">
             <input type="text" id="flagInput" placeholder="FLAG{...}" />
             <button id="submitFlagBtn">Submit Flag</button>
@@ -165,8 +166,14 @@
                 .map(
                   (ch) => `
                     <div class="challenge-card ${ch.solved ? "solved" : ""}">
-                        <strong>${ch.title}</strong> (${ch.points} pts) - ${ch.category}
-                        ${ch.solved ? " ✅" : ""}
+                        <strong>${ch.title}</strong> (${ch.current_points} pts) - ${ch.category}                        ${
+                          ch.solved
+                            ? " ✅"
+                            : ch.attempts_remaining !== null &&
+                                ch.attempts_remaining !== undefined
+                              ? ` <span class="attempts">(${ch.attempts_remaining} tries left)</span>`
+                              : ""
+                        }
                         <button onclick="viewChallenge(${ch.id})">View</button>
                     </div>
                 `,
@@ -184,28 +191,57 @@
           document.getElementById("challengeDetail").style.display = "block";
           document.getElementById("detailTitle").textContent = ch.title;
           document.getElementById("detailCategory").textContent = ch.category;
-          document.getElementById("detailPoints").textContent = ch.points;
+          document.getElementById("detailPoints").textContent =
+            ch.current_points;
           document.getElementById("detailDescription").textContent =
             ch.description || "No description.";
           const fileDiv = document.getElementById("detailFile");
-          const fileLink = document.getElementById("detailFileLink");
+          // const fileLink = document.getElementById("detailFileLink");
           if (ch.file_exists) {
             fileDiv.style.display = "block";
-            fileLink.href = `${API_BASE}/api/challenges/${id}/download`;
-            fileLink.textContent = "Download attached file";
+            const fileBtn = document.getElementById("detailFile");
+            // Replace button with a fresh clone to remove old event listeners
+            const newBtn = fileBtn.cloneNode(true);
+            fileBtn.parentNode.replaceChild(newBtn, fileBtn);
+            newBtn.addEventListener("click", (e) => {
+              e.preventDefault();
+              downloadChallengeFile(id);
+            });
           } else {
             fileDiv.style.display = "none";
           }
           const solvedBadge = document.getElementById("detailSolved");
           const submitForm = document.getElementById("submitForm");
+          const attemptsPara = document.getElementById("detailAttempts");
           if (ch.solved) {
             solvedBadge.style.display = "block";
             submitForm.style.display = "none";
+            attemptsPara.style.display = "none";
           } else {
             solvedBadge.style.display = "none";
             submitForm.style.display = "block";
             document.getElementById("flagInput").value = "";
             document.getElementById("submitMessage").textContent = "";
+
+            // Show remaining attempts
+            if (
+              ch.attempts_remaining !== null &&
+              ch.attempts_remaining !== undefined
+            ) {
+              attemptsPara.style.display = "block";
+              attemptsPara.textContent = `Attempts remaining: ${ch.attempts_remaining}`;
+              if (ch.attempts_remaining <= 0) {
+                attemptsPara.style.color = "red";
+                // Disable submit button when attempts exhausted
+                document.getElementById("submitFlagBtn").disabled = true;
+              } else {
+                attemptsPara.style.color = "inherit";
+                document.getElementById("submitFlagBtn").disabled = false;
+              }
+            } else {
+              attemptsPara.style.display = "none";
+              document.getElementById("submitFlagBtn").disabled = false;
+            }
           }
           // Store current challenge ID for submission
           document.getElementById("submitFlagBtn").onclick = () =>
@@ -228,15 +264,28 @@
           if (res.correct) {
             msg.style.color = "green";
             updateScore();
-            loadChallenges(); // refresh solved status
-            document.getElementById("detailSolved").style.display = "block";
-            document.getElementById("submitForm").style.display = "none";
+            loadChallenges(); // refresh solved status in list
+            // Reload detail to show solved state
+            viewChallenge(challengeId);
           } else {
             msg.style.color = "red";
+            // Reload detail to update attempts remaining
+            viewChallenge(challengeId);
           }
         } catch (err) {
-          msg.textContent = err.message;
-          msg.style.color = "red";
+          if (err.status === 429) {
+            msg.textContent = err.message;
+            msg.style.color = "red";
+            // Disable submit button and show attempts exhausted
+            document.getElementById("submitFlagBtn").disabled = true;
+            const attemptsPara = document.getElementById("detailAttempts");
+            attemptsPara.style.display = "block";
+            attemptsPara.textContent = "No attempts remaining";
+            attemptsPara.style.color = "red";
+          } else {
+            msg.textContent = err.message;
+            msg.style.color = "red";
+          }
         }
       }
 
@@ -289,6 +338,44 @@
           }
         } catch (err) {
           console.error("Failed to load scoreboard:", err);
+        }
+      }
+
+      async function downloadChallengeFile(challengeId) {
+        const token = localStorage.getItem("access_token");
+        if (!token) return;
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/challenges/${challengeId}/download`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+          if (!response.ok) {
+            const err = await response
+              .json()
+              .catch(() => ({ detail: "Download failed" }));
+            throw new Error(err.detail);
+          }
+          const blob = await response.blob();
+          // Extract filename from Content-Disposition header, or use a default
+          const disposition = response.headers.get("Content-Disposition");
+          let filename = "challenge_file";
+          if (disposition) {
+            const match = disposition.match(/filename="(.+)"/);
+            if (match) filename = match[1];
+          }
+          // Trigger download
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        } catch (err) {
+          alert(err.message);
         }
       }
 

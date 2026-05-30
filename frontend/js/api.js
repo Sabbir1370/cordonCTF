@@ -52,6 +52,19 @@ async function api(method, path, body = null) {
         error.status = response.status;
         throw error;
     }
-
+    
     return data;
+}
+
+// Admin Category helpers
+async function adminCreateCategory(name) {
+    return api('POST', '/api/admin/categories', { name });
+}
+
+async function adminUpdateCategory(id, name) {
+    return api('PUT', `/api/admin/categories/${id}`, { name });
+}
+
+async function adminDeleteCategory(id) {
+    return api('DELETE', `/api/admin/categories/${id}`);
 }

@@ -18,6 +18,7 @@
         <button class="tab" data-tab="users">Users</button>
         <button class="tab" data-tab="submissions">Submissions</button>
         <button class="tab" data-tab="event">Event Control</button>
+        <button class="tab" data-tab="categories">Categories</button>
       </nav>
 
       <!-- Challenges Tab -->
@@ -75,6 +76,27 @@
           Reset All Scores
         </button>
       </section>
+
+      <!-- Categories Tab -->
+      <section id="tab-categories" class="tab-content">
+        <h3>Manage Categories</h3>
+
+        <!-- Create form -->
+        <div>
+          <input
+            type="text"
+            id="newCatName"
+            placeholder="Category name"
+            maxlength="50"
+          />
+          <button id="createCatBtn">Create</button>
+          <span id="catCreateMsg"></span>
+        </div>
+
+        <!-- List of categories -->
+        <h4>Existing Categories</h4>
+        <ul id="categoryList"></ul>
+      </section>
     </div>
 
     <script src="js/api.js"></script>
@@ -103,6 +125,7 @@
           if (btn.dataset.tab === "submissions") loadSubmissions();
           if (btn.dataset.tab === "event") loadEventStatus();
           if (btn.dataset.tab === "challenges") loadChallenges();
+          if (btn.dataset.tab === "categories") loadCategories();
         });
       });
 
@@ -309,6 +332,76 @@
           await api("POST", "/api/admin/scoreboard/reset");
           alert("Scoreboard reset complete.");
         });
+
+      // ─── Categories Management ──────────────────────────────
+      async function loadCategories() {
+        try {
+          const cats = await api("GET", "/api/categories");
+          const ul = document.getElementById("categoryList");
+          ul.innerHTML = cats
+            .map(
+              (c) => `
+            <li>
+                ${escapeHtml(c.name)}
+                <button onclick="editCategoryPrompt(${c.id}, '${escapeHtml(c.name)}')">Edit</button>
+                <button onclick="deleteCategory(${c.id})">Delete</button>
+            </li>
+        `,
+            )
+            .join("");
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      document
+        .getElementById("createCatBtn")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("newCatName").value.trim();
+          if (!name) return;
+          try {
+            await adminCreateCategory(name);
+            document.getElementById("newCatName").value = "";
+            document.getElementById("catCreateMsg").textContent =
+              "Category created!";
+            loadCategories();
+          } catch (err) {
+            document.getElementById("catCreateMsg").textContent = err.message;
+          }
+        });
+
+      function editCategoryPrompt(id, currentName) {
+        const newName = prompt("Edit category name:", currentName);
+        if (newName && newName.trim() !== "" && newName !== currentName) {
+          adminUpdateCategory(id, newName.trim())
+            .then(() => loadCategories())
+            .catch((err) => alert(err.message));
+        }
+      }
+
+      async function deleteCategory(id) {
+        if (
+          !confirm(
+            "Delete this category? Challenges using it will become uncategorised.",
+          )
+        )
+          return;
+        try {
+          await adminDeleteCategory(id);
+          loadCategories();
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      // Simple HTML escape to avoid XSS in inline HTML
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
     </script>
   </body>
 </html>

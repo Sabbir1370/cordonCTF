@@ -39,22 +39,6 @@ class CategoryResponse(BaseModel):
     id: int
     name: str
 
-class ChallengeListItem(BaseModel):
-    id: int
-    title: str
-    points: int
-    category: str
-    solved: bool
-
-class ChallengeDetailResponse(BaseModel):
-    id: int
-    title: str
-    description: Optional[str] = None
-    points: int
-    category: str
-    file_exists: bool
-    solved: bool
-
 # ── Flag Submission ──
 class SubmitRequest(BaseModel):
     challenge_id: int
@@ -64,6 +48,9 @@ class SubmitResponse(BaseModel):
     correct: bool
     points_awarded: int
     message: str
+
+class CategoryCreateRequest(BaseModel):
+    name: str
 
 # ── User / Me ──
 class SolveEntry(BaseModel):
@@ -110,3 +97,24 @@ class SubmissionResponse(BaseModel):
 
 class MessageResponse(BaseModel):
     message: str
+
+class ChallengeListItem(BaseModel):
+    id: int
+    title: str
+    points: int
+    category: str
+    solved: bool
+    attempts_remaining: Optional[int] = None
+    current_points: int
+
+class ChallengeDetailResponse(BaseModel):
+    id: int
+    title: str
+    description: Optional[str] = None
+    points: int
+    category: str
+    file_exists: bool
+    solved: bool
+    attempts_remaining: Optional[int] = None
+    current_points: int
+    

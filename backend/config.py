@@ -10,3 +10,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 UPLOAD_FOLDER = "uploads"
+MAX_FLAG_ATTEMPTS = 5  # Maximum incorrect flag submissions per user per challenge
+MIN_POINTS = 50
+SOLVE_MIDPOINT = 5
+DECAY_STEEPNESS = 0.5

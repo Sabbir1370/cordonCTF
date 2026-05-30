@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
 from pydantic import BaseModel
 from ..models import (
-    MessageResponse, UserResponse, SubmissionResponse
+    MessageResponse, UserResponse, SubmissionResponse, CategoryCreateRequest
 )
 from ..database import get_db
 from ..dependencies import get_current_user, admin_required
@@ -210,3 +210,66 @@ def reset_scoreboard(cursor = Depends(get_db), _admin: dict = Depends(admin_requ
     cursor.execute("DELETE FROM submissions")
     cursor.execute("UPDATE users SET score = 0, solve_count = 0, last_solve_time = NULL")
     return {"message": "Scoreboard reset. All scores cleared."}
+
+# ── Category CRUD ──
+@router.post("/categories", status_code=201, response_model=dict)
+def create_category(
+    data: CategoryCreateRequest,
+    cursor = Depends(get_db),
+    _admin: dict = Depends(admin_required)
+):
+    """Create a new category."""
+    # Check duplicate name
+    cursor.execute("SELECT id FROM categories WHERE name = %s", (data.name,))
+    if cursor.fetchone():
+        raise HTTPException(status_code=409, detail="Category already exists")
+
+    cursor.execute("INSERT INTO categories (name) VALUES (%s)", (data.name,))
+    new_id = cursor.lastrowid
+    return {"id": new_id, "name": data.name, "message": "Category created"}
+
+@router.put("/categories/{category_id}", response_model=MessageResponse)
+def update_category(
+    category_id: int,
+    data: CategoryCreateRequest,
+    cursor = Depends(get_db),
+    _admin: dict = Depends(admin_required)
+):
+    """Update category name."""
+    cursor.execute("SELECT id FROM categories WHERE id = %s", (category_id,))
+    if not cursor.fetchone():
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    # Check name uniqueness (except itself)
+    cursor.execute(
+        "SELECT id FROM categories WHERE name = %s AND id != %s",
+        (data.name, category_id)
+    )
+    if cursor.fetchone():
+        raise HTTPException(status_code=409, detail="Another category with this name already exists")
+
+    cursor.execute(
+        "UPDATE categories SET name = %s WHERE id = %s",
+        (data.name, category_id)
+    )
+    return {"message": "Category updated"}
+
+@router.delete("/categories/{category_id}", response_model=MessageResponse)
+def delete_category(
+    category_id: int,
+    cursor = Depends(get_db),
+    _admin: dict = Depends(admin_required)
+):
+    """Delete a category. Linked challenges will have category_id set to NULL."""
+    cursor.execute("SELECT id FROM categories WHERE id = %s", (category_id,))
+    if not cursor.fetchone():
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    # Set challenges using this category to NULL
+    cursor.execute(
+        "UPDATE challenges SET category_id = NULL WHERE category_id = %s",
+        (category_id,)
+    )
+    # Delete the category
+    cursor.execute("DELETE FROM categories WHERE id = %s", (category_id,))
+    return {"message": "Category deleted"}
