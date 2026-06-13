@@ -3,102 +3,304 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CordonCTF - Admin Panel</title>
+    <title>CordonCTF – Admin Panel</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>CordonCTF – Admin Panel</h1>
-        <button onclick="logout()">Logout</button>
-      </header>
-
-      <nav class="tabs">
-        <button class="tab active" data-tab="challenges">Challenges</button>
-        <button class="tab" data-tab="users">Users</button>
-        <button class="tab" data-tab="submissions">Submissions</button>
-        <button class="tab" data-tab="event">Event Control</button>
-        <button class="tab" data-tab="categories">Categories</button>
-      </nav>
-
-      <!-- Challenges Tab -->
-      <section id="tab-challenges" class="tab-content active">
-        <h3>Create Challenge</h3>
-        <form id="challengeForm">
-          <input type="text" id="chTitle" placeholder="Title" required />
-          <textarea id="chDesc" placeholder="Description"></textarea>
-          <select id="chCategory" required></select>
-          <input type="number" id="chPoints" placeholder="Points" required />
-          <input
-            type="text"
-            id="chFlag"
-            placeholder="Flag (e.g., FLAG{...})"
-            required
-          />
-          <input type="file" id="chFile" />
-          <button type="submit">Create Challenge</button>
-          <span id="chCreateMsg"></span>
-        </form>
-
-        <h3>Existing Challenges</h3>
-        <div id="challengeList"></div>
-      </section>
-
-      <!-- Users Tab -->
-      <section id="tab-users" class="tab-content">
-        <h3>All Users</h3>
-        <div id="userList"></div>
-      </section>
-
-      <!-- Submissions Tab -->
-      <section id="tab-submissions" class="tab-content">
-        <h3>Submissions</h3>
-        <div>
-          <input type="number" id="subUserId" placeholder="Filter by User ID" />
-          <input
-            type="number"
-            id="subChallengeId"
-            placeholder="Filter by Challenge ID"
-          />
-          <button id="subFilterBtn">Filter</button>
-        </div>
-        <div id="submissionList"></div>
-      </section>
-
-      <!-- Event Control Tab -->
-      <section id="tab-event" class="tab-content">
-        <h3>Event Status</h3>
-        <div id="eventStatus"></div>
-        <button id="startEventBtn">Start Event</button>
-        <button id="stopEventBtn">Stop Event</button>
-        <h3>Reset Scoreboard</h3>
-        <button id="resetScoreboardBtn" style="background-color: #d9534f">
-          Reset All Scores
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">🛠️ Admin Panel</h2>
+        <button onclick="logout()" class="btn btn-outline-danger">
+          Logout
         </button>
-      </section>
+      </div>
 
-      <!-- Categories Tab -->
-      <section id="tab-categories" class="tab-content">
-        <h3>Manage Categories</h3>
+      <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-challenges"
+            type="button"
+            onclick="loadChallenges()"
+          >
+            Challenges
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-users"
+            type="button"
+            onclick="loadUsers()"
+          >
+            Users
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-submissions"
+            type="button"
+            onclick="loadSubmissions()"
+          >
+            Submissions
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-event"
+            type="button"
+            onclick="loadEventStatus()"
+          >
+            Event Control
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#tab-categories"
+            type="button"
+            onclick="loadCategories()"
+          >
+            Categories
+          </button>
+        </li>
+      </ul>
 
-        <!-- Create form -->
-        <div>
-          <input
-            type="text"
-            id="newCatName"
-            placeholder="Category name"
-            maxlength="50"
-          />
-          <button id="createCatBtn">Create</button>
-          <span id="catCreateMsg"></span>
+      <div class="tab-content">
+        <!-- Challenges Tab -->
+        <div class="tab-pane fade show active" id="tab-challenges">
+          <h4>Create Challenge</h4>
+          <form id="challengeForm" class="row g-3 mb-4">
+            <div class="col-md-6">
+              <input
+                type="text"
+                class="form-control"
+                id="chTitle"
+                placeholder="Title"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <select class="form-select" id="chCategory" required></select>
+            </div>
+            <div class="col-12">
+              <textarea
+                class="form-control"
+                id="chDesc"
+                rows="3"
+                placeholder="Description"
+              ></textarea>
+            </div>
+            <div class="col-md-4">
+              <input
+                type="number"
+                class="form-control"
+                id="chPoints"
+                placeholder="Points"
+                required
+              />
+            </div>
+            <div class="col-md-4">
+              <input
+                type="text"
+                class="form-control"
+                id="chFlag"
+                placeholder="Flag (e.g., FLAG{...})"
+                required
+              />
+            </div>
+            <div class="col-md-4">
+              <input type="file" class="form-control" id="chFile" />
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                Create Challenge
+              </button>
+              <span id="chCreateMsg" class="ms-2"></span>
+            </div>
+          </form>
+
+          <h4>Existing Challenges</h4>
+          <div id="challengeList" class="row"></div>
         </div>
 
-        <!-- List of categories -->
-        <h4>Existing Categories</h4>
-        <ul id="categoryList"></ul>
-      </section>
+        <!-- Users Tab -->
+        <div class="tab-pane fade" id="tab-users">
+          <h4>All Users</h4>
+          <div id="userList"></div>
+        </div>
+
+        <!-- Submissions Tab -->
+        <div class="tab-pane fade" id="tab-submissions">
+          <h4>Submissions</h4>
+          <div class="row g-2 mb-3">
+            <div class="col-md-3">
+              <input
+                type="number"
+                class="form-control"
+                id="subUserId"
+                placeholder="User ID"
+              />
+            </div>
+            <div class="col-md-3">
+              <input
+                type="number"
+                class="form-control"
+                id="subChallengeId"
+                placeholder="Challenge ID"
+              />
+            </div>
+            <div class="col-md-2">
+              <button id="subFilterBtn" class="btn btn-outline-secondary w-100">
+                Filter
+              </button>
+            </div>
+          </div>
+          <div id="submissionList"></div>
+        </div>
+
+        <!-- Event Control Tab -->
+        <div class="tab-pane fade" id="tab-event">
+          <h4>Event Status</h4>
+          <div id="eventStatus" class="mb-3"></div>
+          <button id="startEventBtn" class="btn btn-success me-2">
+            Start Event
+          </button>
+          <button id="stopEventBtn" class="btn btn-warning me-2">
+            Stop Event
+          </button>
+          <h4 class="mt-4">Reset Scoreboard</h4>
+          <button id="resetScoreboardBtn" class="btn btn-danger">
+            Reset All Scores
+          </button>
+        </div>
+
+        <!-- Categories Tab -->
+        <div class="tab-pane fade" id="tab-categories">
+          <h4>Manage Categories</h4>
+          <div class="input-group mb-3">
+            <input
+              type="text"
+              class="form-control"
+              id="newCatName"
+              placeholder="Category name"
+            />
+            <button id="createCatBtn" class="btn btn-primary">Create</button>
+          </div>
+          <span id="catCreateMsg" class="ms-2"></span>
+          <h5>Existing Categories</h5>
+          <ul id="categoryList" class="list-group"></ul>
+        </div>
+      </div>
     </div>
 
+    <!-- Edit Challenge Modal (Bootstrap) -->
+    <div
+      class="modal fade"
+      id="editChallengeModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Challenge</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="editChallengeForm">
+              <input type="hidden" id="editChId" />
+              <div class="mb-3">
+                <label for="editChTitle" class="form-label">Title</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editChTitle"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editChDesc" class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="editChDesc"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editChCategory" class="form-label">Category</label>
+                <select class="form-select" id="editChCategory"></select>
+                <div class="form-text">
+                  Leave empty to keep current category.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editChPoints" class="form-label">Points</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="editChPoints"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editChFlag" class="form-label">Flag</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editChFlag"
+                  placeholder="Leave blank to keep current flag"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editChFile" class="form-label"
+                  >Challenge File</label
+                >
+                <input type="file" class="form-control" id="editChFile" />
+                <div class="form-text">
+                  Upload new file, or leave empty to keep existing.
+                </div>
+              </div>
+              <div id="editChallengeMsg" class="mb-2"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              id="saveEditChallengeBtn"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
@@ -108,38 +310,35 @@
         logout();
       }
 
-      // Tab switching
-      document.querySelectorAll(".tab").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          document
-            .querySelectorAll(".tab")
-            .forEach((b) => b.classList.remove("active"));
-          document
-            .querySelectorAll(".tab-content")
-            .forEach((c) => c.classList.remove("active"));
-          btn.classList.add("active");
-          document
-            .getElementById("tab-" + btn.dataset.tab)
-            .classList.add("active");
-          if (btn.dataset.tab === "users") loadUsers();
-          if (btn.dataset.tab === "submissions") loadSubmissions();
-          if (btn.dataset.tab === "event") loadEventStatus();
-          if (btn.dataset.tab === "challenges") loadChallenges();
-          if (btn.dataset.tab === "categories") loadCategories();
-        });
-      });
+      let _categoriesCache = [];
+      // Utility function (already defined in global scope elsewhere, but safe to redefine)
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-      // Load initial data
+      // Bootstrap modal instance
+      const editModal = new bootstrap.Modal(
+        document.getElementById("editChallengeModal"),
+      );
+
+      // Initial load
       loadCategoriesIntoSelect();
       loadChallenges();
 
-      // ─── Challenges ────────────────────────────────────────
+      // ─── Categories dropdown helpers ──────────────────────────
       async function loadCategoriesIntoSelect() {
         try {
           const cats = await api("GET", "/api/categories");
+          _categoriesCache = cats;
           const select = document.getElementById("chCategory");
           select.innerHTML = cats
-            .map((c) => `<option value="${c.id}">${c.name}</option>`)
+            .map(
+              (c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`,
+            )
             .join("");
         } catch (err) {
           console.error(err);
@@ -150,21 +349,32 @@
         try {
           const list = await api("GET", "/api/challenges");
           const div = document.getElementById("challengeList");
-          if (list.length) {
-            div.innerHTML = list
-              .map(
-                (ch) => `
-                        <div class="challenge-card">
-                            <strong>${ch.title}</strong> (${ch.points} pts) - ${ch.category}
-                            <button onclick="editChallenge(${ch.id})">Edit</button>
-                            <button onclick="deleteChallenge(${ch.id})">Delete</button>
-                        </div>
-                    `,
-              )
-              .join("");
-          } else {
-            div.innerHTML = "<p>No challenges yet.</p>";
+          if (!list.length) {
+            div.innerHTML =
+              '<div class="col-12"><div class="alert alert-info">No challenges yet.</div></div>';
+            return;
           }
+          div.innerHTML = list
+            .map(
+              (ch) => `
+            <div class="col-12 mb-2">
+              <div class="card">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>${escapeHtml(ch.title)}</strong>
+                    <span class="badge bg-secondary ms-2">${ch.points} pts</span>
+                    <span class="text-muted">- ${escapeHtml(ch.category)}</span>
+                  </div>
+                  <div>
+                    <button class="btn btn-outline-primary btn-sm" onclick="editChallenge(${ch.id})">Edit</button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="deleteChallenge(${ch.id})">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `,
+            )
+            .join("");
         } catch (err) {
           console.error(err);
         }
@@ -193,13 +403,14 @@
             const res = await api("POST", "/api/admin/challenges", formData);
             document.getElementById("chCreateMsg").textContent =
               "Challenge created! ID: " + res.challenge_id;
+            document.getElementById("challengeForm").reset();
             loadChallenges();
           } catch (err) {
             document.getElementById("chCreateMsg").textContent = err.message;
           }
         });
 
-      async function deleteChallenge(id) {
+      window.deleteChallenge = async function (id) {
         if (!confirm("Delete this challenge?")) return;
         try {
           await api("DELETE", `/api/admin/challenges/${id}`);
@@ -207,20 +418,74 @@
         } catch (err) {
           alert(err.message);
         }
-      }
+      };
 
-      async function editChallenge(id) {
-        // Simple prompt-based edit (can be enhanced)
-        const points = prompt("New points:");
-        if (points) {
-          const formData = new FormData();
-          formData.append("points", parseInt(points));
-          await api("PUT", `/api/admin/challenges/${id}`, formData);
-          loadChallenges();
+      // Edit modal functions
+      window.editChallenge = async function (id) {
+        try {
+          if (!_categoriesCache.length) {
+            const cats = await api("GET", "/api/categories");
+            _categoriesCache = cats;
+          }
+          const ch = await api("GET", `/api/challenges/${id}`);
+          document.getElementById("editChId").value = id;
+          document.getElementById("editChTitle").value = ch.title || "";
+          document.getElementById("editChDesc").value = ch.description || "";
+          document.getElementById("editChPoints").value = ch.points;
+          document.getElementById("editChFlag").value = "";
+          document.getElementById("editChFile").value = "";
+          document.getElementById("editChallengeMsg").textContent = "";
+
+          const select = document.getElementById("editChCategory");
+          select.innerHTML =
+            `<option value="">(keep current: ${escapeHtml(ch.category || "—")})</option>` +
+            _categoriesCache
+              .map(
+                (c) => `<option value="${c.id}">${escapeHtml(c.name)}</option>`,
+              )
+              .join("");
+          editModal.show();
+        } catch (err) {
+          alert("Failed to load challenge: " + err.message);
         }
-      }
+      };
 
-      // ─── Users ──────────────────────────────────────────────
+      document
+        .getElementById("saveEditChallengeBtn")
+        .addEventListener("click", async () => {
+          const id = document.getElementById("editChId").value;
+          const msgEl = document.getElementById("editChallengeMsg");
+          const formData = new FormData();
+          formData.append(
+            "title",
+            document.getElementById("editChTitle").value,
+          );
+          formData.append(
+            "description",
+            document.getElementById("editChDesc").value,
+          );
+          formData.append(
+            "points",
+            document.getElementById("editChPoints").value,
+          );
+          const catVal = document.getElementById("editChCategory").value;
+          if (catVal) formData.append("category_id", catVal);
+          const flagVal = document.getElementById("editChFlag").value.trim();
+          if (flagVal) formData.append("flag", flagVal);
+          const file = document.getElementById("editChFile").files[0];
+          if (file) formData.append("file", file);
+
+          try {
+            await api("PUT", `/api/admin/challenges/${id}`, formData);
+            msgEl.innerHTML = '<span class="text-success">Saved!</span>';
+            loadChallenges();
+            setTimeout(() => editModal.hide(), 600);
+          } catch (err) {
+            msgEl.innerHTML = `<span class="text-danger">${err.message}</span>`;
+          }
+        });
+
+      // Users
       async function loadUsers() {
         try {
           const users = await api("GET", "/api/admin/users");
@@ -228,12 +493,14 @@
           div.innerHTML = users
             .map(
               (u) => `
-                    <div style="margin-bottom:8px;">
-                        ${u.id} - ${u.username} (${u.role}) Score: ${u.score}
-                        <button onclick="deleteUser(${u.id})">Delete</button>
-                        <button onclick="promptResetPassword(${u.id}, '${u.username}')">Reset Password</button>
-                    </div>
-                `,
+            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+              <span>${u.id} - ${escapeHtml(u.username)} (${u.role}) Score: ${u.score}</span>
+              <div>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteUser(${u.id})">Delete</button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="promptResetPassword(${u.id}, '${escapeHtml(u.username)}')">Reset Password</button>
+              </div>
+            </div>
+          `,
             )
             .join("");
         } catch (err) {
@@ -241,17 +508,17 @@
         }
       }
 
-      async function deleteUser(id) {
-        if (!confirm("Delete this user? All their data will be lost.")) return;
+      window.deleteUser = async function (id) {
+        if (!confirm("Delete this user?")) return;
         try {
           await api("DELETE", `/api/admin/users/${id}`);
           loadUsers();
         } catch (err) {
           alert(err.message);
         }
-      }
+      };
 
-      async function promptResetPassword(userId, username) {
+      window.promptResetPassword = async function (userId, username) {
         const newPass = prompt(`Enter new password for ${username}:`);
         if (!newPass) return;
         try {
@@ -262,9 +529,9 @@
         } catch (err) {
           alert("Error: " + err.message);
         }
-      }
+      };
 
-      // ─── Submissions ────────────────────────────────────────
+      // Submissions
       async function loadSubmissions(userId = null, challengeId = null) {
         try {
           let url = "/api/admin/submissions?";
@@ -272,18 +539,21 @@
           if (challengeId) url += `challenge_id=${challengeId}&`;
           const subs = await api("GET", url);
           const div = document.getElementById("submissionList");
-          div.innerHTML = subs.length
-            ? subs
-                .map(
-                  (s) => `
-                    <div>
-                        [${new Date(s.submitted_at).toLocaleString()}] ${s.username} on ${s.challenge_title}:
-                        ${s.submitted_flag} (${s.is_correct ? "Correct" : "Wrong"} +${s.points_awarded} pts)
-                    </div>
-                `,
-                )
-                .join("")
-            : "<p>No submissions.</p>";
+          if (!subs.length) {
+            div.innerHTML =
+              '<div class="alert alert-info">No submissions.</div>';
+            return;
+          }
+          div.innerHTML = subs
+            .map(
+              (s) => `
+            <div class="border-bottom py-1">
+              [${new Date(s.submitted_at).toLocaleString()}] <strong>${escapeHtml(s.username)}</strong> on <em>${escapeHtml(s.challenge_title)}</em>:
+              ${escapeHtml(s.submitted_flag)} (${s.is_correct ? '<span class="text-success">Correct</span>' : '<span class="text-danger">Wrong</span>'} +${s.points_awarded} pts)
+            </div>
+          `,
+            )
+            .join("");
         } catch (err) {
           console.error(err);
         }
@@ -295,7 +565,7 @@
         loadSubmissions(uid || null, cid || null);
       });
 
-      // ─── Event Control ──────────────────────────────────────
+      // Event control
       async function loadEventStatus() {
         try {
           const status = await api("GET", "/api/event/status");
@@ -323,30 +593,28 @@
       document
         .getElementById("resetScoreboardBtn")
         .addEventListener("click", async () => {
-          if (
-            !confirm(
-              "This will delete ALL submissions and reset all scores. Are you sure?",
-            )
-          )
-            return;
+          if (!confirm("Delete ALL submissions and reset scores?")) return;
           await api("POST", "/api/admin/scoreboard/reset");
           alert("Scoreboard reset complete.");
         });
 
-      // ─── Categories Management ──────────────────────────────
+      // Categories
       async function loadCategories() {
         try {
           const cats = await api("GET", "/api/categories");
+          _categoriesCache = cats;
           const ul = document.getElementById("categoryList");
           ul.innerHTML = cats
             .map(
               (c) => `
-            <li>
-                ${escapeHtml(c.name)}
-                <button onclick="editCategoryPrompt(${c.id}, '${escapeHtml(c.name)}')">Edit</button>
-                <button onclick="deleteCategory(${c.id})">Delete</button>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              ${escapeHtml(c.name)}
+              <div>
+                <button class="btn btn-sm btn-outline-secondary" onclick="editCategoryPrompt(${c.id}, '${escapeHtml(c.name)}')">Edit</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})">Delete</button>
+              </div>
             </li>
-        `,
+          `,
             )
             .join("");
         } catch (err) {
@@ -365,43 +633,57 @@
             document.getElementById("catCreateMsg").textContent =
               "Category created!";
             loadCategories();
+            loadCategoriesIntoSelect();
           } catch (err) {
             document.getElementById("catCreateMsg").textContent = err.message;
           }
         });
 
-      function editCategoryPrompt(id, currentName) {
+      window.editCategoryPrompt = function (id, currentName) {
         const newName = prompt("Edit category name:", currentName);
         if (newName && newName.trim() !== "" && newName !== currentName) {
           adminUpdateCategory(id, newName.trim())
-            .then(() => loadCategories())
+            .then(() => {
+              loadCategories();
+              loadCategoriesIntoSelect();
+            })
             .catch((err) => alert(err.message));
         }
-      }
+      };
 
-      async function deleteCategory(id) {
+      window.deleteCategory = async function (id) {
         if (
           !confirm(
-            "Delete this category? Challenges using it will become uncategorised.",
+            "Delete this category? Challenges will become uncategorised.",
           )
         )
           return;
         try {
           await adminDeleteCategory(id);
           loadCategories();
+          loadCategoriesIntoSelect();
+          loadChallenges();
         } catch (err) {
           alert(err.message);
         }
-      }
+      };
 
-      // Simple HTML escape to avoid XSS in inline HTML
-      function escapeHtml(text) {
-        return String(text)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
+      // Preload event status when tab opens
+      document
+        .querySelector('[data-bs-target="#tab-event"]')
+        .addEventListener("shown.bs.tab", loadEventStatus);
+      document
+        .querySelector('[data-bs-target="#tab-users"]')
+        .addEventListener("shown.bs.tab", loadUsers);
+      document
+        .querySelector('[data-bs-target="#tab-submissions"]')
+        .addEventListener("shown.bs.tab", () => loadSubmissions());
+      document
+        .querySelector('[data-bs-target="#tab-challenges"]')
+        .addEventListener("shown.bs.tab", loadChallenges);
+      document
+        .querySelector('[data-bs-target="#tab-categories"]')
+        .addEventListener("shown.bs.tab", loadCategories);
     </script>
   </body>
 </html>

@@ -3,53 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CordonCTF - Register</title>
+    <title>CordonCTF – Register</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body>
-    <div class="container">
-      <h1>CordonCTF</h1>
-      <h2>Create an Account</h2>
-
-      <form id="registerForm">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            required
-            autocomplete="username"
-          />
+  <body class="bg-light">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-5">
+          <div class="card shadow">
+            <div class="card-body p-4">
+              <h2 class="text-center mb-3">🏴‍☠️ CordonCTF</h2>
+              <h4 class="text-center mb-4">Create Account</h4>
+              <form id="registerForm">
+                <div class="mb-3">
+                  <label for="username" class="form-label">Username</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="username"
+                    required
+                    autocomplete="username"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="password" class="form-label">Password</label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    required
+                    autocomplete="new-password"
+                  />
+                </div>
+                <input type="hidden" id="role" value="player" />
+                <div id="errorMessage" class="alert alert-danger d-none"></div>
+                <div
+                  id="successMessage"
+                  class="alert alert-success d-none"
+                ></div>
+                <button type="submit" class="btn btn-primary w-100">
+                  Register
+                </button>
+              </form>
+              <p class="text-center mt-3 mb-0">
+                Already have an account? <a href="login.html">Login</a>
+              </p>
+              <p class="text-center">
+                <a href="index.html">← Back to Home</a>
+              </p>
+            </div>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            autocomplete="new-password"
-          />
-        </div>
-
-        <input type="hidden" id="role" value="player" />
-
-        <div id="errorMessage" class="error" style="display: none"></div>
-        <div id="successMessage" class="success" style="display: none"></div>
-
-        <button type="submit">Register</button>
-      </form>
-
-      <p class="link-text">
-        Already have an account? <a href="login.html">Login</a>
-      </p>
-      <p class="link-text">
-        <a href="index.html">← Back to Home</a>
-      </p>
+      </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
@@ -59,23 +70,21 @@
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        errorDiv.style.display = "none";
-        successDiv.style.display = "none";
-
+        errorDiv.classList.add("d-none");
+        successDiv.classList.add("d-none");
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
         const role = document.getElementById("role").value;
         try {
           await registerUser(username, password, role);
-          successDiv.textContent =
-            "Account created successfully! Redirecting to login...";
-          successDiv.style.display = "block";
+          successDiv.textContent = "Account created! Redirecting to login...";
+          successDiv.classList.remove("d-none");
           setTimeout(() => {
             window.location.href = "login.html";
           }, 1500);
         } catch (err) {
           errorDiv.textContent = err.message;
-          errorDiv.style.display = "block";
+          errorDiv.classList.remove("d-none");
         }
       });
     </script>

@@ -3,35 +3,82 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CordonCTF - Offline CTF Platform</title>
+    <title>CordonCTF – Offline CTF Platform</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
+      <div class="container">
+        <a class="navbar-brand" href="index.html">🏴‍☠️ CordonCTF</a>
+        <div class="d-flex">
+          <a href="login.html" class="btn btn-outline-primary me-2">Login</a>
+          <a href="register.html" class="btn btn-primary">Register</a>
+        </div>
+      </div>
+    </nav>
+
     <div class="container">
-      <header>
-        <h1>CordonCTF</h1>
-        <nav>
-          <a href="login.html">Login</a>
-          <a href="register.html">Register</a>
-        </nav>
-      </header>
+      <!-- Status row -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+          <div class="card text-bg-light">
+            <div class="card-body text-center">
+              <h6 class="card-title">Event Status</h6>
+              <span id="eventStatus" class="badge bg-secondary fs-6"
+                >Loading...</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card text-bg-light">
+            <div class="card-body text-center">
+              <h6 class="card-title">Participants</h6>
+              <strong id="totalParticipants">0</strong>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card text-bg-light">
+            <div class="card-body text-center">
+              <h6 class="card-title">Challenges</h6>
+              <strong id="totalChallenges">0</strong>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="card text-bg-light">
+            <div class="card-body text-center">
+              <h6 class="card-title">Solves</h6>
+              <strong id="totalSolves">0</strong>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <section class="status-bar">
-        <div>Event Status: <strong id="eventStatus">Loading...</strong></div>
-        <div>Participants: <strong id="totalParticipants">0</strong></div>
-        <div>Challenges: <strong id="totalChallenges">0</strong></div>
-        <div>Solves: <strong id="totalSolves">0</strong></div>
-      </section>
-
-      <section class="scoreboard">
-        <h2>Scoreboard</h2>
-        <div id="scoreboardTable">Loading...</div>
-      </section>
+      <!-- Scoreboard -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">🏆 Scoreboard</h5>
+        </div>
+        <div class="card-body">
+          <div id="scoreboardTable" class="table-responsive">
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
     <script>
-      // Fetch event status, stats, and scoreboard when the page loads
       window.addEventListener("DOMContentLoaded", () => {
         loadEventStatus();
         loadStats();
@@ -41,9 +88,10 @@
       async function loadEventStatus() {
         try {
           const data = await api("GET", "/api/event/status");
-          document.getElementById("eventStatus").textContent =
-            data.status.toUpperCase();
-        } catch (err) {
+          const el = document.getElementById("eventStatus");
+          el.textContent = data.status.toUpperCase();
+          el.className = `badge fs-6 ${data.status === "running" ? "bg-success" : "bg-secondary"}`;
+        } catch {
           document.getElementById("eventStatus").textContent = "Error";
         }
       }
@@ -57,34 +105,38 @@
             stats.total_challenges;
           document.getElementById("totalSolves").textContent =
             stats.total_solves;
-        } catch (err) {
-          // keep zeros
-        }
+        } catch {}
       }
 
       async function loadScoreboard() {
         try {
           const board = await api("GET", "/api/scoreboard");
-          const table = document.getElementById("scoreboardTable");
-          if (board.length === 0) {
-            table.innerHTML = "<p>No players yet.</p>";
+          const container = document.getElementById("scoreboardTable");
+          if (!board.length) {
+            container.innerHTML =
+              '<div class="alert alert-info">No players yet.</div>';
             return;
           }
-          let html =
-            "<table><tr><th>Rank</th><th>Username</th><th>Score</th><th>Solves</th></tr>";
+          let html = `
+            <table class="table table-striped table-hover">
+              <thead class="table-primary">
+                <tr><th>#</th><th>Username</th><th>Score</th><th>Solves</th></tr>
+              </thead>
+              <tbody>
+          `;
           board.forEach((entry) => {
             html += `<tr>
-                        <td>${entry.rank}</td>
-                        <td>${entry.username}</td>
-                        <td>${entry.score}</td>
-                        <td>${entry.solve_count}</td>
-                    </tr>`;
+              <td>${entry.rank}</td>
+              <td>${entry.username}</td>
+              <td>${entry.score}</td>
+              <td>${entry.solve_count}</td>
+            </tr>`;
           });
-          html += "</table>";
-          table.innerHTML = html;
-        } catch (err) {
-          document.getElementById("scoreboardTable").textContent =
-            "Failed to load scoreboard.";
+          html += "</tbody></table>";
+          container.innerHTML = html;
+        } catch {
+          document.getElementById("scoreboardTable").innerHTML =
+            '<div class="alert alert-danger">Failed to load scoreboard.</div>';
         }
       }
     </script>

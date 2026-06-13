@@ -1,7 +1,7 @@
 # backend/config.py
 DB_HOST = "127.0.0.1"
 DB_USER = "ctfadmin"
-DB_PASSWORD = "ctf_pass_2025"
+DB_PASSWORD = "UFTB_cordonCTF_2304005"
 DB_NAME = "cordonctf"
 DB_PORT = 3306
 
