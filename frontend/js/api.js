@@ -3,9 +3,10 @@
 // Base URL for the backend API – auto-detected from the browser's current location.
 // If you're testing on the laptop itself, use localhost. When users connect via hotspot,
 // they'll use the laptop's IP. This makes it portable.
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:8000'
-  : `http://${window.location.hostname}:8000`;
+const API_BASE = '';
+// window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+//   ? 'http://localhost:8000'
+//   : `http://${window.location.hostname}:8000`;
 
 /**
  * Helper function to make API requests.
