@@ -4,208 +4,531 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CordonCTF – Admin Panel</title>
-    <link
-      href="css/vendor/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      :root {
+        --bg: #0f0f0f;
+        --card-bg: #1a1a1a;
+        --accent: #ff2020;
+        --text: #ffffff;
+        --text-secondary: #cccccc;
+        --text-muted: #888888;
+        --border: #333333;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      .mono {
+        font-family: "SFMono-Regular", Consolas, "Courier New", monospace;
+      }
+
+      .cc-navbar {
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 1.25rem;
+      }
+      .cc-brand {
+        color: var(--text);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        font-size: 1.15rem;
+      }
+      .cc-admin-tag {
+        font-family: monospace;
+        font-size: 0.68rem;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        padding: 0.15rem 0.5rem;
+        border-radius: 3px;
+        margin-left: 0.5rem;
+      }
+
+      .cc-sidebar {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1rem;
+      }
+      .cc-nav-tab {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 0.55rem 0.75rem;
+        border-radius: 3px;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        cursor: pointer;
+      }
+      .cc-nav-tab:hover {
+        background: #222;
+        color: var(--text);
+      }
+      .cc-nav-tab.active {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .cc-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1.25rem;
+      }
+      .cc-panel + .cc-panel {
+        margin-top: 1rem;
+      }
+      .cc-panel-heading {
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+      }
+
+      .form-control,
+      .form-select,
+      textarea.form-control {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .form-control:focus,
+      .form-select:focus {
+        background: var(--bg);
+        border-color: var(--accent);
+        color: var(--text);
+        box-shadow: 0 0 0 0.2rem rgba(255, 32, 32, 0.15);
+      }
+      .form-control::placeholder {
+        color: var(--text-muted);
+      }
+
+      .btn-cc-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+      .btn-cc-primary:hover {
+        background: #e01818;
+        border-color: #e01818;
+        color: #fff;
+      }
+      .btn-cc-success {
+        background: #1a3a1a;
+        border-color: #4ade80;
+        color: #4ade80;
+        font-weight: 600;
+      }
+      .btn-cc-success:hover {
+        background: #214a21;
+        color: #4ade80;
+      }
+      .btn-cc-danger {
+        background: transparent;
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .btn-cc-danger:hover {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-cc-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+      }
+      .btn-cc-outline:hover {
+        border-color: #666;
+        color: var(--text);
+      }
+
+      .cc-table {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .cc-table table {
+        margin-bottom: 0;
+        color: var(--text);
+      }
+      .cc-table thead {
+        background: #151515;
+        color: var(--text-muted);
+        font-family: monospace;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+      }
+      .cc-table td,
+      .cc-table th {
+        border-color: var(--border);
+        vertical-align: middle;
+      }
+
+      .cc-badge {
+        display: inline-block;
+        font-family: monospace;
+        font-size: 0.68rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 3px;
+        border: 1px solid;
+        letter-spacing: 0.5px;
+      }
+      .role-admin {
+        background: #2a1a1a;
+        color: var(--accent);
+        border-color: #4a2a2a;
+      }
+      .role-player {
+        background: #1a1a1a;
+        color: #999;
+        border-color: #444;
+      }
+      .result-correct {
+        background: #142a1a;
+        color: #4ade80;
+        border-color: #2a4a2a;
+      }
+      .result-wrong {
+        background: #2a1a1a;
+        color: #e05a5a;
+        border-color: #4a2a2a;
+      }
+
+      .cc-status-display {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: monospace;
+        font-size: 1.6rem;
+        font-weight: 700;
+        padding: 1.25rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+      }
+      .cc-status-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--text-muted);
+      }
+      .cc-status-dot.live {
+        background: #4ade80;
+        box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15);
+      }
+      .cc-status-dot.closed {
+        background: var(--accent);
+        box-shadow: 0 0 0 3px rgba(255, 32, 32, 0.15);
+      }
+
+      .cc-warning-box {
+        background: #2a1a1a;
+        border: 1px solid var(--accent);
+        color: #e05a5a;
+        padding: 0.85rem 1rem;
+        border-radius: 4px;
+        font-size: 0.88rem;
+        margin-bottom: 1rem;
+      }
+
+      .modal-content {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .modal-header,
+      .modal-footer {
+        border-color: var(--border);
+      }
+      .cc-empty {
+        color: var(--text-muted);
+        text-align: center;
+        padding: 2rem;
+      }
+      .collapse-toggle {
+        cursor: pointer;
+        user-select: none;
+      }
+    </style>
   </head>
   <body>
-    <div class="container mt-4">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">🛠️ Admin Panel</h2>
-        <button onclick="logout()" class="btn btn-outline-danger">
-          Logout
-        </button>
+    <nav
+      class="cc-navbar d-flex align-items-center justify-content-between flex-wrap"
+    >
+      <div>
+        <span class="cc-brand">CordonCTF</span
+        ><span class="cc-admin-tag">ADMIN</span>
       </div>
+      <button onclick="logout()" class="btn btn-sm btn-outline-danger">
+        Logout
+      </button>
+    </nav>
 
-      <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link active"
-            data-bs-toggle="tab"
-            data-bs-target="#tab-challenges"
-            type="button"
-            onclick="loadChallenges()"
-          >
-            Challenges
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#tab-users"
-            type="button"
-            onclick="loadUsers()"
-          >
-            Users
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#tab-submissions"
-            type="button"
-            onclick="loadSubmissions()"
-          >
-            Submissions
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#tab-event"
-            type="button"
-            onclick="loadEventStatus()"
-          >
-            Event Control
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#tab-categories"
-            type="button"
-            onclick="loadCategories()"
-          >
-            Categories
-          </button>
-        </li>
-      </ul>
+    <div class="container-fluid py-4 px-3 px-lg-4">
+      <div class="row g-3">
+        <!-- Sidebar -->
+        <div class="col-lg-2">
+          <div class="cc-sidebar">
+            <button
+              class="cc-nav-tab active"
+              data-tab="challenges"
+              onclick="switchTab('challenges')"
+            >
+              Challenges
+            </button>
+            <button
+              class="cc-nav-tab"
+              data-tab="users"
+              onclick="switchTab('users')"
+            >
+              Users
+            </button>
+            <button
+              class="cc-nav-tab"
+              data-tab="submissions"
+              onclick="switchTab('submissions')"
+            >
+              Submissions
+            </button>
+            <button
+              class="cc-nav-tab"
+              data-tab="event"
+              onclick="switchTab('event')"
+            >
+              Event Control
+            </button>
+            <button
+              class="cc-nav-tab"
+              data-tab="categories"
+              onclick="switchTab('categories')"
+            >
+              Categories
+            </button>
+          </div>
+        </div>
 
-      <div class="tab-content">
-        <!-- Challenges Tab -->
-        <div class="tab-pane fade show active" id="tab-challenges">
-          <h4>Create Challenge</h4>
-          <form id="challengeForm" class="row g-3 mb-4">
-            <div class="col-md-6">
-              <input
-                type="text"
-                class="form-control"
-                id="chTitle"
-                placeholder="Title"
-                required
-              />
+        <!-- Main -->
+        <div class="col-lg-10">
+          <!-- Challenges -->
+          <div id="pane-challenges">
+            <div class="cc-panel">
+              <div
+                class="d-flex justify-content-between align-items-center collapse-toggle"
+                data-bs-toggle="collapse"
+                data-bs-target="#createChallengeBody"
+              >
+                <div class="cc-panel-heading mb-0">Create Challenge</div>
+                <span class="text-muted small">▾ toggle</span>
+              </div>
+              <div class="collapse show mt-3" id="createChallengeBody">
+                <form id="challengeForm" class="row g-3">
+                  <div class="col-md-6">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="chTitle"
+                      placeholder="Title"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <select
+                      class="form-select"
+                      id="chCategory"
+                      required
+                    ></select>
+                  </div>
+                  <div class="col-12">
+                    <textarea
+                      class="form-control"
+                      id="chDesc"
+                      rows="3"
+                      placeholder="Description"
+                    ></textarea>
+                  </div>
+                  <div class="col-md-4">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="chPoints"
+                      placeholder="Points"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="chFlag"
+                      placeholder="Flag (e.g., FLAG{...})"
+                      required
+                    />
+                  </div>
+                  <div class="col-md-4">
+                    <input type="file" class="form-control" id="chFile" />
+                  </div>
+                  <div class="col-12">
+                    <button type="submit" class="btn btn-cc-primary">
+                      Create Challenge
+                    </button>
+                    <span id="chCreateMsg" class="ms-2 small"></span>
+                  </div>
+                </form>
+              </div>
             </div>
-            <div class="col-md-6">
-              <select class="form-select" id="chCategory" required></select>
+
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Existing Challenges</div>
+              <div class="cc-table table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Category</th>
+                      <th>Points</th>
+                      <th>Solves</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="challengeTableBody"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="col-12">
-              <textarea
-                class="form-control"
-                id="chDesc"
-                rows="3"
-                placeholder="Description"
-              ></textarea>
+          </div>
+
+          <!-- Users -->
+          <div id="pane-users" class="d-none">
+            <div class="cc-panel">
+              <div class="cc-panel-heading">All Users</div>
+              <div class="cc-table table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Username</th>
+                      <th>Role</th>
+                      <th>Score</th>
+                      <th>Solves</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="userTableBody"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="col-md-4">
-              <input
-                type="number"
-                class="form-control"
-                id="chPoints"
-                placeholder="Points"
-                required
-              />
+          </div>
+
+          <!-- Submissions -->
+          <div id="pane-submissions" class="d-none">
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Filter Submissions</div>
+              <div class="row g-2">
+                <div class="col-md-3">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="subUserId"
+                    placeholder="User ID"
+                  />
+                </div>
+                <div class="col-md-3">
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="subChallengeId"
+                    placeholder="Challenge ID"
+                  />
+                </div>
+                <div class="col-md-2">
+                  <button id="subFilterBtn" class="btn btn-cc-outline w-100">
+                    Filter
+                  </button>
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              <input
-                type="text"
-                class="form-control"
-                id="chFlag"
-                placeholder="Flag (e.g., FLAG{...})"
-                required
-              />
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Submissions</div>
+              <div class="cc-table table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Username</th>
+                      <th>Challenge</th>
+                      <th>Submitted Flag</th>
+                      <th>Result</th>
+                      <th>Points</th>
+                    </tr>
+                  </thead>
+                  <tbody id="submissionTableBody"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="col-md-4">
-              <input type="file" class="form-control" id="chFile" />
-            </div>
-            <div class="col-12">
-              <button type="submit" class="btn btn-primary">
-                Create Challenge
+          </div>
+
+          <!-- Event Control -->
+          <div id="pane-event" class="d-none">
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Event Status</div>
+              <div class="cc-status-display mb-3">
+                <span class="cc-status-dot" id="eventDot"></span>
+                <span id="eventStatusText">LOADING…</span>
+              </div>
+              <button id="startEventBtn" class="btn btn-cc-success me-2">
+                Start Event
               </button>
-              <span id="chCreateMsg" class="ms-2"></span>
+              <button id="stopEventBtn" class="btn btn-cc-danger">
+                Stop Event
+              </button>
             </div>
-          </form>
-
-          <h4>Existing Challenges</h4>
-          <div id="challengeList" class="row"></div>
-        </div>
-
-        <!-- Users Tab -->
-        <div class="tab-pane fade" id="tab-users">
-          <h4>All Users</h4>
-          <div id="userList"></div>
-        </div>
-
-        <!-- Submissions Tab -->
-        <div class="tab-pane fade" id="tab-submissions">
-          <h4>Submissions</h4>
-          <div class="row g-2 mb-3">
-            <div class="col-md-3">
-              <input
-                type="number"
-                class="form-control"
-                id="subUserId"
-                placeholder="User ID"
-              />
-            </div>
-            <div class="col-md-3">
-              <input
-                type="number"
-                class="form-control"
-                id="subChallengeId"
-                placeholder="Challenge ID"
-              />
-            </div>
-            <div class="col-md-2">
-              <button id="subFilterBtn" class="btn btn-outline-secondary w-100">
-                Filter
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Reset Scoreboard</div>
+              <div class="cc-warning-box">
+                ⚠ This permanently deletes all submissions and resets every
+                player's score to zero. This cannot be undone.
+              </div>
+              <button id="resetScoreboardBtn" class="btn btn-cc-danger">
+                Reset All Scores
               </button>
             </div>
           </div>
-          <div id="submissionList"></div>
-        </div>
 
-        <!-- Event Control Tab -->
-        <div class="tab-pane fade" id="tab-event">
-          <h4>Event Status</h4>
-          <div id="eventStatus" class="mb-3"></div>
-          <button id="startEventBtn" class="btn btn-success me-2">
-            Start Event
-          </button>
-          <button id="stopEventBtn" class="btn btn-warning me-2">
-            Stop Event
-          </button>
-          <h4 class="mt-4">Reset Scoreboard</h4>
-          <button id="resetScoreboardBtn" class="btn btn-danger">
-            Reset All Scores
-          </button>
-        </div>
-
-        <!-- Categories Tab -->
-        <div class="tab-pane fade" id="tab-categories">
-          <h4>Manage Categories</h4>
-          <div class="input-group mb-3">
-            <input
-              type="text"
-              class="form-control"
-              id="newCatName"
-              placeholder="Category name"
-            />
-            <button id="createCatBtn" class="btn btn-primary">Create</button>
+          <!-- Categories -->
+          <div id="pane-categories" class="d-none">
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Create Category</div>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  id="newCatName"
+                  placeholder="Category name"
+                />
+                <button id="createCatBtn" class="btn btn-cc-primary">
+                  Create
+                </button>
+              </div>
+              <span id="catCreateMsg" class="ms-2 small"></span>
+            </div>
+            <div class="cc-panel">
+              <div class="cc-panel-heading">Existing Categories</div>
+              <div id="categoryListDiv"></div>
+            </div>
           </div>
-          <span id="catCreateMsg" class="ms-2"></span>
-          <h5>Existing Categories</h5>
-          <ul id="categoryList" class="list-group"></ul>
         </div>
       </div>
     </div>
 
-    <!-- Edit Challenge Modal (Bootstrap) -->
+    <!-- Edit Challenge Modal -->
     <div
       class="modal fade"
       id="editChallengeModal"
@@ -218,7 +541,7 @@
             <h5 class="modal-title">Edit Challenge</h5>
             <button
               type="button"
-              class="btn-close"
+              class="btn-close btn-close-white"
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
@@ -227,7 +550,9 @@
             <form id="editChallengeForm">
               <input type="hidden" id="editChId" />
               <div class="mb-3">
-                <label for="editChTitle" class="form-label">Title</label>
+                <label for="editChTitle" class="form-label small text-secondary"
+                  >Title</label
+                >
                 <input
                   type="text"
                   class="form-control"
@@ -236,7 +561,9 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="editChDesc" class="form-label">Description</label>
+                <label for="editChDesc" class="form-label small text-secondary"
+                  >Description</label
+                >
                 <textarea
                   class="form-control"
                   id="editChDesc"
@@ -244,14 +571,22 @@
                 ></textarea>
               </div>
               <div class="mb-3">
-                <label for="editChCategory" class="form-label">Category</label>
+                <label
+                  for="editChCategory"
+                  class="form-label small text-secondary"
+                  >Category</label
+                >
                 <select class="form-select" id="editChCategory"></select>
-                <div class="form-text">
-                  Leave empty to keep current category.
+                <div class="form-text text-muted">
+                  Leave on default option to keep current category.
                 </div>
               </div>
               <div class="mb-3">
-                <label for="editChPoints" class="form-label">Points</label>
+                <label
+                  for="editChPoints"
+                  class="form-label small text-secondary"
+                  >Points</label
+                >
                 <input
                   type="number"
                   class="form-control"
@@ -260,7 +595,9 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="editChFlag" class="form-label">Flag</label>
+                <label for="editChFlag" class="form-label small text-secondary"
+                  >Flag</label
+                >
                 <input
                   type="text"
                   class="form-control"
@@ -269,31 +606,127 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="editChFile" class="form-label"
+                <label for="editChFile" class="form-label small text-secondary"
                   >Challenge File</label
                 >
                 <input type="file" class="form-control" id="editChFile" />
-                <div class="form-text">
-                  Upload new file, or leave empty to keep existing.
+                <div class="form-text text-muted">
+                  Upload a new file to replace, or leave empty to keep existing.
                 </div>
               </div>
-              <div id="editChallengeMsg" class="mb-2"></div>
+              <div id="editChallengeMsg" class="mb-2 small"></div>
             </form>
           </div>
           <div class="modal-footer">
             <button
               type="button"
-              class="btn btn-secondary"
+              class="btn btn-cc-outline"
               data-bs-dismiss="modal"
             >
               Cancel
             </button>
             <button
               type="button"
-              class="btn btn-primary"
+              class="btn btn-cc-primary"
               id="saveEditChallengeBtn"
             >
               Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div
+      class="modal fade"
+      id="resetPasswordModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              Reset Password — <span id="resetPwUsername"></span>
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="resetPwUserId" />
+            <label class="form-label small text-secondary">New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              id="resetPwNewPassword"
+              minlength="8"
+              required
+            />
+            <div id="resetPwMsg" class="mt-2 small"></div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-cc-outline"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-cc-primary"
+              id="resetPwSaveBtn"
+            >
+              Reset Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div
+      class="modal fade"
+      id="editCategoryModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Category</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="editCatId" />
+            <label class="form-label small text-secondary">Name</label>
+            <input type="text" class="form-control" id="editCatName" required />
+            <div id="editCatMsg" class="mt-2 small"></div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-cc-outline"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-cc-primary"
+              id="editCatSaveBtn"
+            >
+              Save
             </button>
           </div>
         </div>
@@ -310,26 +743,48 @@
         logout();
       }
 
-      let _categoriesCache = [];
-      // Utility function (already defined in global scope elsewhere, but safe to redefine)
       function escapeHtml(text) {
-        return String(text)
+        return String(text ?? "")
           .replace(/&/g, "&amp;")
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
-      // Bootstrap modal instance
+      let _categoriesCache = [];
       const editModal = new bootstrap.Modal(
         document.getElementById("editChallengeModal"),
       );
+      const resetPwModal = new bootstrap.Modal(
+        document.getElementById("resetPasswordModal"),
+      );
+      const editCatModal = new bootstrap.Modal(
+        document.getElementById("editCategoryModal"),
+      );
 
-      // Initial load
+      // ── Tabs ────────────────────────────────────────────────
+      function switchTab(tab) {
+        document
+          .querySelectorAll(".cc-nav-tab")
+          .forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+        ["challenges", "users", "submissions", "event", "categories"].forEach(
+          (t) =>
+            document
+              .getElementById("pane-" + t)
+              .classList.toggle("d-none", t !== tab),
+        );
+        if (tab === "users") loadUsers();
+        if (tab === "submissions") loadSubmissions();
+        if (tab === "event") loadEventStatus();
+        if (tab === "categories") loadCategories();
+        if (tab === "challenges") loadChallenges();
+      }
+
       loadCategoriesIntoSelect();
       loadChallenges();
 
-      // ─── Categories dropdown helpers ──────────────────────────
+      // ── Categories dropdown ────────────────────────────────
       async function loadCategoriesIntoSelect() {
         try {
           const cats = await api("GET", "/api/categories");
@@ -345,33 +800,28 @@
         }
       }
 
+      // ── Challenges ─────────────────────────────────────────
       async function loadChallenges() {
         try {
           const list = await api("GET", "/api/challenges");
-          const div = document.getElementById("challengeList");
+          const body = document.getElementById("challengeTableBody");
           if (!list.length) {
-            div.innerHTML =
-              '<div class="col-12"><div class="alert alert-info">No challenges yet.</div></div>';
+            body.innerHTML = `<tr><td colspan="5" class="cc-empty">No challenges yet.</td></tr>`;
             return;
           }
-          div.innerHTML = list
+          body.innerHTML = list
             .map(
               (ch) => `
-            <div class="col-12 mb-2">
-              <div class="card">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>${escapeHtml(ch.title)}</strong>
-                    <span class="badge bg-secondary ms-2">${ch.points} pts</span>
-                    <span class="text-muted">- ${escapeHtml(ch.category)}</span>
-                  </div>
-                  <div>
-                    <button class="btn btn-outline-primary btn-sm" onclick="editChallenge(${ch.id})">Edit</button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="deleteChallenge(${ch.id})">Delete</button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <tr>
+              <td>${escapeHtml(ch.title)}</td>
+              <td class="text-secondary">${escapeHtml(ch.category || "—")}</td>
+              <td class="mono">${ch.points}</td>
+              <td class="text-secondary">${ch.solve_count ?? "—"}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-cc-outline" onclick="editChallenge(${ch.id})">Edit</button>
+                <button class="btn btn-sm btn-cc-danger" onclick="deleteChallenge(${ch.id})">Delete</button>
+              </td>
+            </tr>
           `,
             )
             .join("");
@@ -401,17 +851,18 @@
 
           try {
             const res = await api("POST", "/api/admin/challenges", formData);
-            document.getElementById("chCreateMsg").textContent =
-              "Challenge created! ID: " + res.challenge_id;
+            document.getElementById("chCreateMsg").innerHTML =
+              `<span class="text-success">Challenge created! ID: ${res.challenge_id}</span>`;
             document.getElementById("challengeForm").reset();
             loadChallenges();
           } catch (err) {
-            document.getElementById("chCreateMsg").textContent = err.message;
+            document.getElementById("chCreateMsg").innerHTML =
+              `<span class="text-danger">${escapeHtml(err.message)}</span>`;
           }
         });
 
       window.deleteChallenge = async function (id) {
-        if (!confirm("Delete this challenge?")) return;
+        if (!confirm("Delete this challenge? This cannot be undone.")) return;
         try {
           await api("DELETE", `/api/admin/challenges/${id}`);
           loadChallenges();
@@ -420,13 +871,10 @@
         }
       };
 
-      // Edit modal functions
       window.editChallenge = async function (id) {
         try {
-          if (!_categoriesCache.length) {
-            const cats = await api("GET", "/api/categories");
-            _categoriesCache = cats;
-          }
+          if (!_categoriesCache.length)
+            _categoriesCache = await api("GET", "/api/categories");
           const ch = await api("GET", `/api/challenges/${id}`);
           document.getElementById("editChId").value = id;
           document.getElementById("editChTitle").value = ch.title || "";
@@ -477,29 +925,37 @@
 
           try {
             await api("PUT", `/api/admin/challenges/${id}`, formData);
-            msgEl.innerHTML = '<span class="text-success">Saved!</span>';
+            msgEl.innerHTML = `<span class="text-success">Saved!</span>`;
             loadChallenges();
             setTimeout(() => editModal.hide(), 600);
           } catch (err) {
-            msgEl.innerHTML = `<span class="text-danger">${err.message}</span>`;
+            msgEl.innerHTML = `<span class="text-danger">${escapeHtml(err.message)}</span>`;
           }
         });
 
-      // Users
+      // ── Users ──────────────────────────────────────────────
       async function loadUsers() {
         try {
           const users = await api("GET", "/api/admin/users");
-          const div = document.getElementById("userList");
-          div.innerHTML = users
+          const body = document.getElementById("userTableBody");
+          if (!users.length) {
+            body.innerHTML = `<tr><td colspan="6" class="cc-empty">No users.</td></tr>`;
+            return;
+          }
+          body.innerHTML = users
             .map(
               (u) => `
-            <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-              <span>${u.id} - ${escapeHtml(u.username)} (${u.role}) Score: ${u.score}</span>
-              <div>
-                <button class="btn btn-outline-danger btn-sm" onclick="deleteUser(${u.id})">Delete</button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="promptResetPassword(${u.id}, '${escapeHtml(u.username)}')">Reset Password</button>
-              </div>
-            </div>
+            <tr>
+              <td>${u.id}</td>
+              <td>${escapeHtml(u.username)}</td>
+              <td><span class="cc-badge ${u.role === "admin" ? "role-admin" : "role-player"}">${escapeHtml(u.role)}</span></td>
+              <td class="mono">${u.score}</td>
+              <td class="text-secondary">${u.solve_count ?? "—"}</td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-cc-outline" onclick="openResetPassword(${u.id}, '${escapeHtml(u.username)}')">Reset Password</button>
+                <button class="btn btn-sm btn-cc-danger" onclick="deleteUser(${u.id})">Delete</button>
+              </td>
+            </tr>
           `,
             )
             .join("");
@@ -509,7 +965,7 @@
       }
 
       window.deleteUser = async function (id) {
-        if (!confirm("Delete this user?")) return;
+        if (!confirm("Delete this user? This cannot be undone.")) return;
         try {
           await api("DELETE", `/api/admin/users/${id}`);
           loadUsers();
@@ -518,39 +974,62 @@
         }
       };
 
-      window.promptResetPassword = async function (userId, username) {
-        const newPass = prompt(`Enter new password for ${username}:`);
-        if (!newPass) return;
-        try {
-          await api("POST", `/api/admin/users/${userId}/reset-password`, {
-            new_password: newPass,
-          });
-          alert("Password reset successfully.");
-        } catch (err) {
-          alert("Error: " + err.message);
-        }
+      window.openResetPassword = function (userId, username) {
+        document.getElementById("resetPwUserId").value = userId;
+        document.getElementById("resetPwUsername").textContent = username;
+        document.getElementById("resetPwNewPassword").value = "";
+        document.getElementById("resetPwMsg").textContent = "";
+        resetPwModal.show();
       };
 
-      // Submissions
+      document
+        .getElementById("resetPwSaveBtn")
+        .addEventListener("click", async () => {
+          const userId = document.getElementById("resetPwUserId").value;
+          const newPass = document.getElementById("resetPwNewPassword").value;
+          const msg = document.getElementById("resetPwMsg");
+          if (!newPass || newPass.length < 8) {
+            msg.innerHTML = `<span class="text-danger">Password must be at least 8 characters.</span>`;
+            return;
+          }
+          try {
+            await api("POST", `/api/admin/users/${userId}/reset-password`, {
+              new_password: newPass,
+            });
+            msg.innerHTML = `<span class="text-success">Password reset successfully.</span>`;
+            setTimeout(() => resetPwModal.hide(), 600);
+          } catch (err) {
+            msg.innerHTML = `<span class="text-danger">${escapeHtml(err.message)}</span>`;
+          }
+        });
+
+      // ── Submissions ────────────────────────────────────────
       async function loadSubmissions(userId = null, challengeId = null) {
         try {
           let url = "/api/admin/submissions?";
           if (userId) url += `user_id=${userId}&`;
           if (challengeId) url += `challenge_id=${challengeId}&`;
           const subs = await api("GET", url);
-          const div = document.getElementById("submissionList");
+          const body = document.getElementById("submissionTableBody");
           if (!subs.length) {
-            div.innerHTML =
-              '<div class="alert alert-info">No submissions.</div>';
+            body.innerHTML = `<tr><td colspan="6" class="cc-empty">No submissions.</td></tr>`;
             return;
           }
-          div.innerHTML = subs
+          body.innerHTML = subs
             .map(
               (s) => `
-            <div class="border-bottom py-1">
-              [${new Date(s.submitted_at).toLocaleString()}] <strong>${escapeHtml(s.username)}</strong> on <em>${escapeHtml(s.challenge_title)}</em>:
-              ${escapeHtml(s.submitted_flag)} (${s.is_correct ? '<span class="text-success">Correct</span>' : '<span class="text-danger">Wrong</span>'} +${s.points_awarded} pts)
-            </div>
+            <tr>
+              <td class="text-secondary small">${new Date(s.submitted_at).toLocaleString()}</td>
+              <td>${escapeHtml(s.username)}</td>
+              <td class="text-secondary">${escapeHtml(s.challenge_title)}</td>
+              <td class="mono small">${escapeHtml(s.submitted_flag)}</td>
+              <td>${
+                s.is_correct
+                  ? `<span class="cc-badge result-correct">✓ Correct</span>`
+                  : `<span class="cc-badge result-wrong">✗ Wrong</span>`
+              }</td>
+              <td class="mono">${s.points_awarded ?? 0}</td>
+            </tr>
           `,
             )
             .join("");
@@ -565,12 +1044,16 @@
         loadSubmissions(uid || null, cid || null);
       });
 
-      // Event control
+      // ── Event control ──────────────────────────────────────
       async function loadEventStatus() {
         try {
           const status = await api("GET", "/api/event/status");
-          document.getElementById("eventStatus").textContent =
-            "Current status: " + status.status;
+          const live = status.status === "live" || status.status === "running";
+          document.getElementById("eventStatusText").textContent = live
+            ? "LIVE"
+            : "CLOSED";
+          document.getElementById("eventDot").className =
+            "cc-status-dot " + (live ? "live" : "closed");
         } catch (err) {
           console.error(err);
         }
@@ -579,41 +1062,62 @@
       document
         .getElementById("startEventBtn")
         .addEventListener("click", async () => {
-          await api("PUT", "/api/admin/event/start");
-          loadEventStatus();
+          try {
+            await api("PUT", "/api/admin/event/start");
+            loadEventStatus();
+          } catch (err) {
+            alert(err.message);
+          }
         });
 
       document
         .getElementById("stopEventBtn")
         .addEventListener("click", async () => {
-          await api("PUT", "/api/admin/event/stop");
-          loadEventStatus();
+          try {
+            await api("PUT", "/api/admin/event/stop");
+            loadEventStatus();
+          } catch (err) {
+            alert(err.message);
+          }
         });
 
       document
         .getElementById("resetScoreboardBtn")
         .addEventListener("click", async () => {
-          if (!confirm("Delete ALL submissions and reset scores?")) return;
-          await api("POST", "/api/admin/scoreboard/reset");
-          alert("Scoreboard reset complete.");
+          if (
+            !confirm(
+              "Delete ALL submissions and reset scores? This cannot be undone.",
+            )
+          )
+            return;
+          try {
+            await api("POST", "/api/admin/scoreboard/reset");
+            alert("Scoreboard reset complete.");
+          } catch (err) {
+            alert(err.message);
+          }
         });
 
-      // Categories
+      // ── Categories ─────────────────────────────────────────
       async function loadCategories() {
         try {
           const cats = await api("GET", "/api/categories");
           _categoriesCache = cats;
-          const ul = document.getElementById("categoryList");
-          ul.innerHTML = cats
+          const div = document.getElementById("categoryListDiv");
+          if (!cats.length) {
+            div.innerHTML = `<div class="cc-empty">No categories yet.</div>`;
+            return;
+          }
+          div.innerHTML = cats
             .map(
               (c) => `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              ${escapeHtml(c.name)}
+            <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border);">
+              <span>${escapeHtml(c.name)}</span>
               <div>
-                <button class="btn btn-sm btn-outline-secondary" onclick="editCategoryPrompt(${c.id}, '${escapeHtml(c.name)}')">Edit</button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(${c.id})">Delete</button>
+                <button class="btn btn-sm btn-cc-outline" onclick="openEditCategory(${c.id}, '${escapeHtml(c.name)}')">Edit</button>
+                <button class="btn btn-sm btn-cc-danger" onclick="deleteCategory(${c.id})">Delete</button>
               </div>
-            </li>
+            </div>
           `,
             )
             .join("");
@@ -630,31 +1134,48 @@
           try {
             await adminCreateCategory(name);
             document.getElementById("newCatName").value = "";
-            document.getElementById("catCreateMsg").textContent =
-              "Category created!";
+            document.getElementById("catCreateMsg").innerHTML =
+              `<span class="text-success">Category created!</span>`;
             loadCategories();
             loadCategoriesIntoSelect();
           } catch (err) {
-            document.getElementById("catCreateMsg").textContent = err.message;
+            document.getElementById("catCreateMsg").innerHTML =
+              `<span class="text-danger">${escapeHtml(err.message)}</span>`;
           }
         });
 
-      window.editCategoryPrompt = function (id, currentName) {
-        const newName = prompt("Edit category name:", currentName);
-        if (newName && newName.trim() !== "" && newName !== currentName) {
-          adminUpdateCategory(id, newName.trim())
-            .then(() => {
-              loadCategories();
-              loadCategoriesIntoSelect();
-            })
-            .catch((err) => alert(err.message));
-        }
+      window.openEditCategory = function (id, currentName) {
+        document.getElementById("editCatId").value = id;
+        document.getElementById("editCatName").value = currentName;
+        document.getElementById("editCatMsg").textContent = "";
+        editCatModal.show();
       };
+
+      document
+        .getElementById("editCatSaveBtn")
+        .addEventListener("click", async () => {
+          const id = document.getElementById("editCatId").value;
+          const name = document.getElementById("editCatName").value.trim();
+          const msg = document.getElementById("editCatMsg");
+          if (!name) {
+            msg.innerHTML = `<span class="text-danger">Name is required.</span>`;
+            return;
+          }
+          try {
+            await adminUpdateCategory(id, name);
+            msg.innerHTML = `<span class="text-success">Saved!</span>`;
+            loadCategories();
+            loadCategoriesIntoSelect();
+            setTimeout(() => editCatModal.hide(), 500);
+          } catch (err) {
+            msg.innerHTML = `<span class="text-danger">${escapeHtml(err.message)}</span>`;
+          }
+        });
 
       window.deleteCategory = async function (id) {
         if (
           !confirm(
-            "Delete this category? Challenges will become uncategorised.",
+            "Delete this category? Its challenges will become uncategorised.",
           )
         )
           return;
@@ -667,23 +1188,6 @@
           alert(err.message);
         }
       };
-
-      // Preload event status when tab opens
-      document
-        .querySelector('[data-bs-target="#tab-event"]')
-        .addEventListener("shown.bs.tab", loadEventStatus);
-      document
-        .querySelector('[data-bs-target="#tab-users"]')
-        .addEventListener("shown.bs.tab", loadUsers);
-      document
-        .querySelector('[data-bs-target="#tab-submissions"]')
-        .addEventListener("shown.bs.tab", () => loadSubmissions());
-      document
-        .querySelector('[data-bs-target="#tab-challenges"]')
-        .addEventListener("shown.bs.tab", loadChallenges);
-      document
-        .querySelector('[data-bs-target="#tab-categories"]')
-        .addEventListener("shown.bs.tab", loadCategories);
     </script>
   </body>
 </html>

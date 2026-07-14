@@ -4,173 +4,601 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CordonCTF – Player Dashboard</title>
-    <link
-      href="css/vendor/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      :root {
+        --bg: #0f0f0f;
+        --card-bg: #1a1a1a;
+        --accent: #ff2020;
+        --text: #ffffff;
+        --text-secondary: #cccccc;
+        --text-muted: #888888;
+        --border: #333333;
+        --gold: #d4af37;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      .mono {
+        font-family: "SFMono-Regular", Consolas, "Courier New", monospace;
+      }
+
+      /* Navbar */
+      .cc-navbar {
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 1.25rem;
+      }
+      .cc-brand {
+        color: var(--text);
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-decoration: none;
+        font-size: 1.15rem;
+      }
+      .cc-status-badge {
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 0.72rem;
+        letter-spacing: 1px;
+        padding: 0.3rem 0.75rem;
+        border-radius: 3px;
+        border: 1px solid var(--border);
+      }
+      .cc-status-badge.live {
+        color: #4ade80;
+        border-color: #4ade80;
+      }
+      .cc-status-badge.closed {
+        color: var(--text-muted);
+      }
+      .cc-score-pill {
+        background: var(--bg);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        font-family: monospace;
+        font-weight: 700;
+        padding: 0.3rem 0.75rem;
+        border-radius: 3px;
+      }
+
+      /* Sidebar */
+      .cc-sidebar {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1rem;
+      }
+      .cc-user-card {
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+      }
+      .cc-user-card .username {
+        font-weight: 700;
+        font-size: 1.05rem;
+      }
+      .cc-user-card .stat-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-top: 0.35rem;
+      }
+      .cc-user-card .stat-row span:last-child {
+        color: var(--text);
+        font-weight: 600;
+        font-family: monospace;
+      }
+
+      .cc-nav-tab {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        padding: 0.55rem 0.75rem;
+        border-radius: 3px;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+        cursor: pointer;
+      }
+      .cc-nav-tab:hover {
+        background: #222;
+        color: var(--text);
+      }
+      .cc-nav-tab.active {
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .cc-filter-heading {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin: 1rem 0 0.5rem;
+      }
+      .cc-cat-btn {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 0.4rem 0.65rem;
+        border-radius: 3px;
+        font-size: 0.82rem;
+        margin-bottom: 0.3rem;
+        cursor: pointer;
+      }
+      .cc-cat-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .cc-toggle-group {
+        display: flex;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+      }
+      .cc-toggle-btn {
+        flex: 1;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        padding: 0.35rem;
+        border-radius: 3px;
+        font-size: 0.78rem;
+        cursor: pointer;
+      }
+      .cc-toggle-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      /* Challenge cards */
+      .cc-challenge-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-left: 2px solid var(--accent);
+        border-radius: 4px;
+        padding: 1rem;
+        cursor: pointer;
+        height: 100%;
+        transition: transform 0.1s ease;
+      }
+      .cc-challenge-card:hover {
+        transform: translateY(-2px);
+        border-color: #555;
+        border-left-color: var(--accent);
+      }
+      .cc-challenge-card.solved {
+        border-left-color: #4ade80;
+        opacity: 0.7;
+      }
+      .cc-challenge-card .title {
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+      }
+      .cc-challenge-card .current-points {
+        color: var(--accent);
+        font-size: 1.4rem;
+        font-weight: 700;
+        font-family: monospace;
+      }
+      .cc-challenge-card.solved .current-points {
+        color: #4ade80;
+      }
+      .cc-challenge-card .base-points {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+      }
+      .cc-challenge-card .solved-check {
+        color: #4ade80;
+        font-weight: 700;
+        font-size: 0.82rem;
+      }
+      .cc-challenge-card .attempts-left {
+        color: var(--text-muted);
+        font-size: 0.78rem;
+      }
+
+      .cc-badge {
+        display: inline-block;
+        font-family: monospace;
+        font-size: 0.68rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 3px;
+        border: 1px solid;
+        letter-spacing: 0.5px;
+      }
+      .cat-web {
+        background: #1a2a1a;
+        color: #6fcf6f;
+        border-color: #2a4a2a;
+      }
+      .cat-crypto {
+        background: #1a1a2a;
+        color: #6f8fcf;
+        border-color: #2a2a4a;
+      }
+      .cat-forensics {
+        background: #2a1a1a;
+        color: #e05a5a;
+        border-color: #4a2a2a;
+      }
+      .cat-pwn {
+        background: #2a1a2a;
+        color: #b06fcf;
+        border-color: #4a2a4a;
+      }
+      .cat-misc {
+        background: #1a1a1a;
+        color: #999999;
+        border-color: #444444;
+      }
+      .cat-rev {
+        background: #2a2a1a;
+        color: #cfb06f;
+        border-color: #4a4a2a;
+      }
+
+      /* Modal */
+      .modal-content {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .modal-header,
+      .modal-footer {
+        border-color: var(--border);
+      }
+      .cc-solved-banner {
+        background: #142a1a;
+        border: 1px solid #4ade80;
+        color: #4ade80;
+        padding: 0.6rem 0.9rem;
+        border-radius: 4px;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+      .cc-download-btn {
+        display: inline-block;
+        width: auto;
+      }
+
+      /* Scoreboard */
+      .cc-table {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .cc-table table {
+        margin-bottom: 0;
+        color: var(--text);
+      }
+      .cc-table thead {
+        background: #151515;
+        color: var(--text-muted);
+        font-family: monospace;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+      }
+      .cc-table td,
+      .cc-table th {
+        border-color: var(--border);
+        vertical-align: middle;
+      }
+      .cc-table tr.me {
+        border-left: 3px solid var(--accent);
+      }
+      .cc-table tr.first-place {
+        background: rgba(212, 175, 55, 0.08);
+      }
+      .cc-table tr.first-place td:first-child {
+        color: var(--gold);
+        font-weight: 700;
+      }
+
+      .cc-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1.25rem;
+      }
+      .form-control,
+      .form-select {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .form-control:focus,
+      .form-select:focus {
+        background: var(--bg);
+        border-color: var(--accent);
+        color: var(--text);
+        box-shadow: 0 0 0 0.2rem rgba(255, 32, 32, 0.15);
+      }
+      .btn-cc-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+      .btn-cc-primary:hover {
+        background: #e01818;
+        border-color: #e01818;
+        color: #fff;
+      }
+      .cc-empty {
+        color: var(--text-muted);
+        text-align: center;
+        padding: 2rem;
+      }
+    </style>
   </head>
   <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="dashboard.html">🏴‍☠️ CordonCTF</a>
-        <div class="d-flex align-items-center">
-          <span class="me-3" id="usernameDisplay"></span>
-          <span class="badge bg-primary me-3"
-            >Score: <span id="scoreDisplay">0</span></span
-          >
-          <button onclick="logout()" class="btn btn-outline-danger btn-sm">
-            Logout
-          </button>
-        </div>
+    <nav
+      class="cc-navbar d-flex align-items-center justify-content-between flex-wrap"
+    >
+      <a class="cc-brand" href="dashboard.html">CordonCTF</a>
+      <span id="eventStatusBadge" class="cc-status-badge closed">LOADING…</span>
+      <div class="d-flex align-items-center gap-2">
+        <span id="usernameDisplay" class="text-secondary mono small"></span>
+        <span class="cc-score-pill"
+          >SCORE: <span id="scoreDisplay">0</span></span
+        >
+        <button onclick="logout()" class="btn btn-sm btn-outline-danger">
+          Logout
+        </button>
       </div>
     </nav>
 
-    <div class="container">
-      <!-- Tabs -->
-      <ul class="nav nav-pills mb-4" id="dashboardTabs" role="tablist">
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link active"
-            data-bs-toggle="pill"
-            data-bs-target="#tab-challenges"
-            type="button"
-          >
-            Challenges
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="pill"
-            data-bs-target="#tab-solves"
-            type="button"
-            onclick="loadSolves()"
-          >
-            My Solves
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="pill"
-            data-bs-target="#tab-scoreboard"
-            type="button"
-            onclick="loadScoreboard()"
-          >
-            Scoreboard
-          </button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button
-            class="nav-link"
-            data-bs-toggle="pill"
-            data-bs-target="#tab-password"
-            type="button"
-          >
-            Change Password
-          </button>
-        </li>
-      </ul>
-
-      <div class="tab-content">
-        <!-- Challenges Tab -->
-        <div class="tab-pane fade show active" id="tab-challenges">
-          <div class="row">
-            <div class="col-md-3">
-              <h5>Categories</h5>
-              <div id="categoryList" class="d-grid gap-2 mb-3"></div>
+    <div class="container-fluid py-4 px-3 px-lg-4">
+      <div class="row g-3">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+          <div class="cc-sidebar">
+            <div class="cc-user-card">
+              <div class="username" id="sbUsername">—</div>
+              <div class="stat-row">
+                <span>Score</span><span id="sbScore">0</span>
+              </div>
+              <div class="stat-row">
+                <span>Solves</span><span id="sbSolves">0</span>
+              </div>
+              <div class="stat-row">
+                <span>Rank</span><span id="sbRank">—</span>
+              </div>
             </div>
-            <div class="col-md-9">
-              <h5>Challenges</h5>
-              <div id="challengeList" class="row"></div>
-              <!-- Challenge detail card (hidden by default) -->
-              <div id="challengeDetail" class="card mt-3 d-none">
-                <div class="card-body">
-                  <h4 id="detailTitle" class="card-title"></h4>
-                  <p>
-                    <strong>Category:</strong> <span id="detailCategory"></span>
-                  </p>
-                  <p>
-                    <strong>Current Points:</strong>
-                    <span id="detailPoints"></span>
-                  </p>
-                  <p>
-                    <strong>Description:</strong>
-                    <span id="detailDescription"></span>
-                  </p>
-                  <div id="detailFile" class="mb-2 d-none">
-                    <button
-                      id="detailFileBtn"
-                      class="btn btn-outline-secondary btn-sm"
-                    >
-                      ⬇ Download Challenge File
-                    </button>
-                  </div>
-                  <p id="detailSolved" class="text-success fw-bold d-none">
-                    ✅ Already Solved
-                  </p>
-                  <p id="detailAttempts" class="d-none"></p>
-                  <div id="submitForm" class="input-group mt-3">
-                    <input
-                      type="text"
-                      id="flagInput"
-                      class="form-control"
-                      placeholder="FLAG{...}"
-                    />
-                    <button id="submitFlagBtn" class="btn btn-primary">
-                      Submit Flag
-                    </button>
-                  </div>
-                  <div id="submitMessage" class="mt-2"></div>
-                </div>
+
+            <button
+              class="cc-nav-tab active"
+              data-tab="challenges"
+              onclick="switchTab('challenges')"
+            >
+              Challenges
+            </button>
+            <button
+              class="cc-nav-tab"
+              data-tab="scoreboard"
+              onclick="switchTab('scoreboard')"
+            >
+              Scoreboard
+            </button>
+            <button
+              class="cc-nav-tab"
+              data-tab="profile"
+              onclick="switchTab('profile')"
+            >
+              Profile
+            </button>
+
+            <div id="filterSection">
+              <div class="cc-filter-heading">Category</div>
+              <div id="categoryFilters"></div>
+
+              <div class="cc-filter-heading">Status</div>
+              <div class="cc-toggle-group">
+                <button
+                  class="cc-toggle-btn active"
+                  data-solved="all"
+                  onclick="setSolvedFilter('all')"
+                >
+                  All
+                </button>
+                <button
+                  class="cc-toggle-btn"
+                  data-solved="unsolved"
+                  onclick="setSolvedFilter('unsolved')"
+                >
+                  Unsolved
+                </button>
+                <button
+                  class="cc-toggle-btn"
+                  data-solved="solved"
+                  onclick="setSolvedFilter('solved')"
+                >
+                  Solved
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Solves Tab -->
-        <div class="tab-pane fade" id="tab-solves">
-          <h4>My Solves</h4>
-          <div id="solvesList"></div>
-        </div>
+        <!-- Main content -->
+        <div class="col-lg-9">
+          <!-- Challenges pane -->
+          <div id="pane-challenges">
+            <div id="challengeGrid" class="row g-3"></div>
+          </div>
 
-        <!-- Scoreboard Tab -->
-        <div class="tab-pane fade" id="tab-scoreboard">
-          <h4>Scoreboard</h4>
-          <div id="scoreboardTable" class="table-responsive"></div>
-        </div>
+          <!-- Scoreboard pane -->
+          <div id="pane-scoreboard" class="d-none">
+            <div class="cc-table table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Username</th>
+                    <th>Score</th>
+                    <th>Solves</th>
+                    <th>Last Solve</th>
+                  </tr>
+                </thead>
+                <tbody id="scoreboardBody"></tbody>
+              </table>
+            </div>
+          </div>
 
-        <!-- Change Password Tab -->
-        <div class="tab-pane fade" id="tab-password">
-          <h4>Change Password</h4>
-          <form id="changePasswordForm">
-            <div class="mb-3">
-              <label for="currentPassword" class="form-label"
-                >Current Password</label
+          <!-- Profile pane -->
+          <div id="pane-profile" class="d-none">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <div class="cc-panel mb-3">
+                  <h6
+                    class="text-uppercase mono text-secondary mb-3"
+                    style="font-size: 0.78rem; letter-spacing: 1px"
+                  >
+                    Change Password
+                  </h6>
+                  <form id="changePasswordForm">
+                    <div class="mb-2">
+                      <label class="form-label small text-secondary"
+                        >Current Password</label
+                      >
+                      <input
+                        type="password"
+                        class="form-control form-control-sm"
+                        id="currentPassword"
+                        required
+                      />
+                    </div>
+                    <div class="mb-2">
+                      <label class="form-label small text-secondary"
+                        >New Password</label
+                      >
+                      <input
+                        type="password"
+                        class="form-control form-control-sm"
+                        id="newPassword"
+                        required
+                        minlength="8"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small text-secondary"
+                        >Confirm New Password</label
+                      >
+                      <input
+                        type="password"
+                        class="form-control form-control-sm"
+                        id="confirmNewPassword"
+                        required
+                      />
+                    </div>
+                    <button type="submit" class="btn btn-cc-primary btn-sm">
+                      Update Password
+                    </button>
+                  </form>
+                  <div id="passwordMessage" class="mt-2 small"></div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <div class="cc-panel">
+                  <h6
+                    class="text-uppercase mono text-secondary mb-3"
+                    style="font-size: 0.78rem; letter-spacing: 1px"
+                  >
+                    Solved Challenges
+                  </h6>
+                  <div id="solvesList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Challenge Detail Modal -->
+    <div
+      class="modal fade"
+      id="challengeModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title mb-1" id="detailTitle"></h5>
+              <span id="detailCategory"></span>
+            </div>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex align-items-baseline gap-2 mb-3">
+              <span
+                id="detailPoints"
+                class="cc-score-pill"
+                style="font-size: 1.1rem"
+              ></span>
+              <span id="detailSolveCount" class="text-muted small mono"></span>
+            </div>
+            <p
+              id="detailDescription"
+              class="text-secondary"
+              style="white-space: pre-wrap"
+            ></p>
+
+            <div id="detailFile" class="mb-3 d-none">
+              <button
+                id="detailFileBtn"
+                class="btn btn-outline-light btn-sm cc-download-btn"
               >
-              <input
-                type="password"
-                class="form-control"
-                id="currentPassword"
-                required
-              />
+                ⬇ Download File
+              </button>
             </div>
-            <div class="mb-3">
-              <label for="newPassword" class="form-label">New Password</label>
-              <input
-                type="password"
-                class="form-control"
-                id="newPassword"
-                required
-              />
+
+            <div id="detailSolvedBanner" class="cc-solved-banner d-none">
+              ✓ Solved
             </div>
-            <button type="submit" class="btn btn-primary">
-              Update Password
-            </button>
-          </form>
-          <div id="passwordMessage" class="mt-2"></div>
+            <div id="detailEventClosed" class="text-muted small d-none">
+              Event is not currently running.
+            </div>
+
+            <div id="submitForm" class="d-none">
+              <div class="input-group">
+                <input
+                  type="text"
+                  id="flagInput"
+                  class="form-control"
+                  placeholder="FLAG{...}"
+                />
+                <button id="submitFlagBtn" class="btn btn-cc-primary">
+                  Submit Flag
+                </button>
+              </div>
+              <div
+                id="detailAttempts"
+                class="small text-muted mt-2 d-none"
+              ></div>
+              <div id="submitMessage" class="mt-2 small"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -180,96 +608,210 @@
     <script src="js/auth.js"></script>
     <script>
       requireAuth();
-      const usernameDisplay = document.getElementById("usernameDisplay");
-      const scoreDisplay = document.getElementById("scoreDisplay");
-      usernameDisplay.textContent = localStorage.getItem("username");
-      updateScore();
 
-      // Load categories and challenges on page load
-      loadCategories();
-      loadChallenges();
-
-      async function updateScore() {
-        try {
-          const data = await api("GET", "/api/me/score");
-          scoreDisplay.textContent = data.score;
-        } catch {}
+      const CATEGORY_CLASS = {
+        web: "cat-web",
+        crypto: "cat-crypto",
+        forensics: "cat-forensics",
+        pwn: "cat-pwn",
+        misc: "cat-misc",
+        rev: "cat-rev",
+        reverse: "cat-rev",
+      };
+      function catClass(name) {
+        return CATEGORY_CLASS[(name || "").toLowerCase()] || "cat-misc";
+      }
+      function escapeHtml(text) {
+        return String(text ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
-      async function loadCategories() {
+      const state = {
+        challenges: [],
+        activeCategory: null,
+        solvedFilter: "all",
+        eventLive: false,
+      };
+
+      document.getElementById("usernameDisplay").textContent =
+        localStorage.getItem("username") || "";
+      document.getElementById("sbUsername").textContent =
+        localStorage.getItem("username") || "—";
+
+      init();
+      async function init() {
+        await Promise.all([
+          loadEventStatus(),
+          loadScore(),
+          loadCategories(),
+          loadChallenges(),
+        ]);
+        setInterval(() => {
+          if (
+            !document
+              .getElementById("pane-scoreboard")
+              .classList.contains("d-none")
+          )
+            loadScoreboard();
+        }, 30000);
+      }
+
+      // ── Tabs ────────────────────────────────────────────────
+      function switchTab(tab) {
+        document
+          .querySelectorAll(".cc-nav-tab")
+          .forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+        document
+          .getElementById("pane-challenges")
+          .classList.toggle("d-none", tab !== "challenges");
+        document
+          .getElementById("pane-scoreboard")
+          .classList.toggle("d-none", tab !== "scoreboard");
+        document
+          .getElementById("pane-profile")
+          .classList.toggle("d-none", tab !== "profile");
+        document
+          .getElementById("filterSection")
+          .classList.toggle("d-none", tab !== "challenges");
+        if (tab === "scoreboard") loadScoreboard();
+        if (tab === "profile") loadSolves();
+      }
+
+      // ── Event status ───────────────────────────────────────
+      async function loadEventStatus() {
+        const badge = document.getElementById("eventStatusBadge");
         try {
-          const categories = await api("GET", "/api/categories");
-          const catList = document.getElementById("categoryList");
-          catList.innerHTML = categories
-            .map(
-              (cat) =>
-                `<button class="btn btn-outline-primary btn-sm category-btn" data-catid="${cat.id}">${cat.name}</button>`,
-            )
-            .join("");
-          document.querySelectorAll(".category-btn").forEach((btn) => {
-            btn.addEventListener("click", () =>
-              loadChallenges(btn.dataset.catid),
-            );
-          });
+          const status = await api("GET", "/api/event/status");
+          state.eventLive =
+            status.status === "live" || status.status === "running";
+          badge.textContent = state.eventLive ? "LIVE" : "CLOSED";
+          badge.classList.toggle("live", state.eventLive);
+          badge.classList.toggle("closed", !state.eventLive);
+        } catch (err) {
+          badge.textContent = "UNKNOWN";
+        }
+      }
+
+      async function loadScore() {
+        try {
+          const data = await api("GET", "/api/me/score");
+          document.getElementById("scoreDisplay").textContent = data.score;
+          document.getElementById("sbScore").textContent = data.score;
         } catch (err) {
           console.error(err);
         }
       }
 
+      // ── Categories ─────────────────────────────────────────
+      async function loadCategories() {
+        try {
+          const cats = await api("GET", "/api/categories");
+          const container = document.getElementById("categoryFilters");
+          container.innerHTML =
+            `<button class="cc-cat-btn active" data-catid="" onclick="setCategory(null, this)">All</button>` +
+            cats
+              .map(
+                (c) =>
+                  `<button class="cc-cat-btn" data-catid="${c.id}" onclick="setCategory('${c.id}', this)">${escapeHtml(c.name)}</button>`,
+              )
+              .join("");
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      function setCategory(catId, btn) {
+        state.activeCategory = catId;
+        document
+          .querySelectorAll(".cc-cat-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadChallenges(catId);
+      }
+
+      function setSolvedFilter(filter) {
+        state.solvedFilter = filter;
+        document
+          .querySelectorAll(".cc-toggle-btn")
+          .forEach((b) =>
+            b.classList.toggle("active", b.dataset.solved === filter),
+          );
+        renderChallenges();
+      }
+
+      // ── Challenges ─────────────────────────────────────────
       async function loadChallenges(categoryId = null) {
         try {
           let url = "/api/challenges";
           if (categoryId) url += "?category=" + categoryId;
-          const challenges = await api("GET", url);
-          const list = document.getElementById("challengeList");
-          if (!challenges.length) {
-            list.innerHTML =
-              '<div class="col-12"><div class="alert alert-info">No challenges in this category.</div></div>';
-            return;
-          }
-          list.innerHTML = challenges
-            .map(
-              (ch) => `
-            <div class="col-md-6 col-lg-4 mb-3">
-              <div class="card challenge-card ${ch.solved ? "solved" : ""}">
-                <div class="card-body">
-                  <h6 class="card-title">${ch.title}</h6>
-                  <p class="card-text">
-                    <span class="badge bg-secondary">${ch.category}</span>
-                    ${ch.base_points ? `<br><small>Base: ${ch.base_points} pts</small>` : ""}
-                    <br><strong>${ch.current_points} pts</strong>
-                    ${ch.solved ? " ✅" : ""}
-                    ${ch.attempts_remaining !== null && ch.attempts_remaining !== undefined ? `<br><small>${ch.attempts_remaining} tries left</small>` : ""}
-                  </p>
-                  <button class="btn btn-primary btn-sm" onclick="viewChallenge(${ch.id})">View</button>
-                </div>
-              </div>
-            </div>
-          `,
-            )
-            .join("");
+          state.challenges = await api("GET", url);
+          renderChallenges();
         } catch (err) {
           console.error(err);
         }
       }
 
+      function renderChallenges() {
+        let list = state.challenges;
+        if (state.solvedFilter === "solved")
+          list = list.filter((c) => c.solved);
+        if (state.solvedFilter === "unsolved")
+          list = list.filter((c) => !c.solved);
+
+        const grid = document.getElementById("challengeGrid");
+        if (!list.length) {
+          grid.innerHTML = `<div class="col-12"><div class="cc-empty">No challenges match this view.</div></div>`;
+          return;
+        }
+        grid.innerHTML = list
+          .map(
+            (ch) => `
+          <div class="col-md-6 col-xl-4">
+            <div class="cc-challenge-card ${ch.solved ? "solved" : ""}" onclick="viewChallenge(${ch.id})">
+              <span class="cc-badge ${catClass(ch.category)}">${escapeHtml(ch.category || "misc")}</span>
+              <div class="title mt-2">${escapeHtml(ch.title)}</div>
+              <div class="current-points">${ch.current_points}</div>
+              ${ch.base_points ? `<div class="base-points">base: ${ch.base_points} pts</div>` : ""}
+              <div class="mt-2">
+                ${
+                  ch.solved
+                    ? `<span class="solved-check">✓ Solved</span>`
+                    : ch.attempts_remaining !== null &&
+                        ch.attempts_remaining !== undefined
+                      ? `<span class="attempts-left">${ch.attempts_remaining} attempts left</span>`
+                      : ""
+                }
+              </div>
+            </div>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      // ── Challenge modal ────────────────────────────────────
+      const challengeModalEl = document.getElementById("challengeModal");
+      const challengeModal = new bootstrap.Modal(challengeModalEl);
+
       async function viewChallenge(id) {
         try {
           const ch = await api("GET", "/api/challenges/" + id);
-          const detail = document.getElementById("challengeDetail");
-          detail.classList.remove("d-none");
           document.getElementById("detailTitle").textContent = ch.title;
-          document.getElementById("detailCategory").textContent = ch.category;
+          document.getElementById("detailCategory").innerHTML =
+            `<span class="cc-badge ${catClass(ch.category)}">${escapeHtml(ch.category || "misc")}</span>`;
           document.getElementById("detailPoints").textContent =
-            ch.current_points +
-            (ch.base_points ? ` (base: ${ch.base_points})` : "");
+            `${ch.current_points} pts`;
+          document.getElementById("detailSolveCount").textContent =
+            ch.solve_count !== undefined ? `${ch.solve_count} solves` : "";
           document.getElementById("detailDescription").textContent =
             ch.description || "No description.";
 
-          // File download button
           const fileDiv = document.getElementById("detailFile");
           const fileBtn = document.getElementById("detailFileBtn");
-          // Remove old handler
           const newBtn = fileBtn.cloneNode(true);
           fileBtn.parentNode.replaceChild(newBtn, fileBtn);
           if (ch.file_exists) {
@@ -282,43 +824,44 @@
             fileDiv.classList.add("d-none");
           }
 
-          const solvedBadge = document.getElementById("detailSolved");
+          const solvedBanner = document.getElementById("detailSolvedBanner");
+          const eventClosedMsg = document.getElementById("detailEventClosed");
           const submitForm = document.getElementById("submitForm");
-          const attemptsPara = document.getElementById("detailAttempts");
+          const attemptsDiv = document.getElementById("detailAttempts");
           const flagInput = document.getElementById("flagInput");
-          const submitFlagBtn = document.getElementById("submitFlagBtn");
+          const submitBtn = document.getElementById("submitFlagBtn");
           const submitMsg = document.getElementById("submitMessage");
+          submitMsg.innerHTML = "";
+          flagInput.value = "";
 
           if (ch.solved) {
-            solvedBadge.classList.remove("d-none");
+            solvedBanner.classList.remove("d-none");
+            eventClosedMsg.classList.add("d-none");
             submitForm.classList.add("d-none");
-            attemptsPara.classList.add("d-none");
+          } else if (!state.eventLive) {
+            solvedBanner.classList.add("d-none");
+            eventClosedMsg.classList.remove("d-none");
+            submitForm.classList.add("d-none");
           } else {
-            solvedBadge.classList.add("d-none");
+            solvedBanner.classList.add("d-none");
+            eventClosedMsg.classList.add("d-none");
             submitForm.classList.remove("d-none");
-            flagInput.value = "";
-            submitMsg.innerHTML = "";
 
             if (
               ch.attempts_remaining !== null &&
               ch.attempts_remaining !== undefined
             ) {
-              attemptsPara.classList.remove("d-none");
-              attemptsPara.textContent = `Attempts remaining: ${ch.attempts_remaining}`;
-              if (ch.attempts_remaining <= 0) {
-                attemptsPara.classList.add("text-danger");
-                submitFlagBtn.disabled = true;
-              } else {
-                attemptsPara.classList.remove("text-danger");
-                submitFlagBtn.disabled = false;
-              }
+              attemptsDiv.classList.remove("d-none");
+              attemptsDiv.textContent = `${ch.attempts_remaining} attempts remaining`;
+              submitBtn.disabled = ch.attempts_remaining <= 0;
             } else {
-              attemptsPara.classList.add("d-none");
-              submitFlagBtn.disabled = false;
+              attemptsDiv.classList.add("d-none");
+              submitBtn.disabled = false;
             }
-            // Bind submission
-            submitFlagBtn.onclick = () => submitFlag(id);
+            submitBtn.onclick = () => submitFlag(id);
           }
+
+          challengeModal.show();
         } catch (err) {
           console.error(err);
         }
@@ -333,73 +876,24 @@
             challenge_id: challengeId,
             flag,
           });
-          msg.innerHTML = `<span class="${res.correct ? "text-success" : "text-danger"}">${res.message}</span>`;
+          msg.innerHTML = `<span class="${res.correct ? "text-success" : "text-danger"}">${escapeHtml(res.message || "")}</span>`;
           if (res.correct) {
-            updateScore();
-            loadChallenges();
-            viewChallenge(challengeId); // refresh to show solved
+            loadScore();
+            loadChallenges(state.activeCategory);
+            viewChallenge(challengeId);
           } else {
-            viewChallenge(challengeId); // update attempts
+            viewChallenge(challengeId);
           }
         } catch (err) {
           if (err.status === 429) {
-            msg.innerHTML = `<span class="text-danger">${err.message}</span>`;
+            msg.innerHTML = `<span class="text-danger">${escapeHtml(err.message)}</span>`;
             document.getElementById("submitFlagBtn").disabled = true;
-            const attemptsPara = document.getElementById("detailAttempts");
-            attemptsPara.classList.remove("d-none");
-            attemptsPara.textContent = "No attempts remaining";
-            attemptsPara.classList.add("text-danger");
+            const attemptsDiv = document.getElementById("detailAttempts");
+            attemptsDiv.classList.remove("d-none");
+            attemptsDiv.textContent = "No attempts remaining";
           } else {
-            msg.innerHTML = `<span class="text-danger">${err.message}</span>`;
+            msg.innerHTML = `<span class="text-danger">${escapeHtml(err.message)}</span>`;
           }
-        }
-      }
-
-      async function loadSolves() {
-        try {
-          const solves = await api("GET", "/api/me/solves");
-          const list = document.getElementById("solvesList");
-          if (!solves.length) {
-            list.innerHTML =
-              '<div class="alert alert-info">No solves yet.</div>';
-            return;
-          }
-          list.innerHTML = solves
-            .map(
-              (s) =>
-                `<div class="d-flex justify-content-between border-bottom py-2">
-              <span>${s.title}</span>
-              <span>${s.points} pts</span>
-              <small>${new Date(s.solved_at).toLocaleString()}</small>
-            </div>`,
-            )
-            .join("");
-        } catch (err) {
-          console.error(err);
-        }
-      }
-
-      async function loadScoreboard() {
-        try {
-          const board = await api("GET", "/api/scoreboard");
-          const container = document.getElementById("scoreboardTable");
-          if (!board.length) {
-            container.innerHTML =
-              '<div class="alert alert-info">Scoreboard is empty.</div>';
-            return;
-          }
-          let html = `
-            <table class="table table-striped table-hover">
-              <thead class="table-primary"><tr><th>#</th><th>Username</th><th>Score</th><th>Solves</th></tr></thead>
-              <tbody>
-          `;
-          board.forEach((e) => {
-            html += `<tr><td>${e.rank}</td><td>${e.username}</td><td>${e.score}</td><td>${e.solve_count}</td></tr>`;
-          });
-          html += "</tbody></table>";
-          container.innerHTML = html;
-        } catch (err) {
-          console.error(err);
         }
       }
 
@@ -437,7 +931,65 @@
         }
       }
 
-      // Change Password
+      // ── Scoreboard ─────────────────────────────────────────
+      async function loadScoreboard() {
+        try {
+          const board = await api("GET", "/api/scoreboard");
+          const me = localStorage.getItem("username");
+          const body = document.getElementById("scoreboardBody");
+          if (!board.length) {
+            body.innerHTML = `<tr><td colspan="5" class="cc-empty">Scoreboard is empty.</td></tr>`;
+            return;
+          }
+          body.innerHTML = board
+            .map((e) => {
+              const isMe = e.username === me;
+              const isFirst = e.rank === 1;
+              return `<tr class="${isMe ? "me" : ""} ${isFirst ? "first-place" : ""}">
+              <td>#${e.rank}</td>
+              <td>${escapeHtml(e.username)}</td>
+              <td class="mono">${e.score}</td>
+              <td>${e.solve_count}</td>
+              <td class="text-muted small">${e.last_solve_at ? new Date(e.last_solve_at).toLocaleString() : "—"}</td>
+            </tr>`;
+            })
+            .join("");
+
+          const mine = board.find((e) => e.username === me);
+          if (mine) {
+            document.getElementById("sbRank").textContent = "#" + mine.rank;
+            document.getElementById("sbSolves").textContent = mine.solve_count;
+            document.getElementById("sbScore").textContent = mine.score;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      // ── Profile ────────────────────────────────────────────
+      async function loadSolves() {
+        try {
+          const solves = await api("GET", "/api/me/solves");
+          const list = document.getElementById("solvesList");
+          if (!solves.length) {
+            list.innerHTML = `<div class="cc-empty">No solves yet.</div>`;
+            return;
+          }
+          list.innerHTML = solves
+            .map(
+              (s) => `
+            <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border);">
+              <span>${escapeHtml(s.title)}</span>
+              <span class="mono text-secondary">${s.points} pts</span>
+              <span class="text-muted small">${new Date(s.solved_at).toLocaleString()}</span>
+            </div>`,
+            )
+            .join("");
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
       document
         .getElementById("changePasswordForm")
         .addEventListener("submit", async (e) => {
@@ -445,17 +997,23 @@
           const currentPassword =
             document.getElementById("currentPassword").value;
           const newPassword = document.getElementById("newPassword").value;
+          const confirmPassword =
+            document.getElementById("confirmNewPassword").value;
           const msg = document.getElementById("passwordMessage");
+
+          if (newPassword !== confirmPassword) {
+            msg.innerHTML = `<span class="text-danger">New passwords do not match.</span>`;
+            return;
+          }
           try {
             await api("PUT", "/api/me/password", {
               current_password: currentPassword,
               new_password: newPassword,
             });
-            msg.innerHTML =
-              '<span class="text-success">Password changed successfully.</span>';
+            msg.innerHTML = `<span class="text-success">Password changed successfully.</span>`;
             document.getElementById("changePasswordForm").reset();
           } catch (err) {
-            msg.innerHTML = `<span class="text-danger">${err.message}</span>`;
+            msg.innerHTML = `<span class="text-danger">${escapeHtml(err.message)}</span>`;
           }
         });
     </script>

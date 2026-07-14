@@ -1,35 +1,368 @@
-/* Minimal custom overrides on top of Bootstrap 5 */
+/* ===========================================================
+   CordonCTF — shared stylesheet
+   Red/Black tactical theme. Loaded on every page alongside
+   Bootstrap 5 (css/vendor/bootstrap.min.css).
+   =========================================================== */
+
+:root {
+  --bg-primary: #0f0f0f;
+  --bg-card: #1a1a1a;
+  --bg-card-alt: #151515;
+  --accent: #ff2020;
+  --accent-hover: #e01818;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
+  --border: #333333;
+  --border-accent: #ff2020;
+  --success: #4ade80;
+  --gold: #d4af37;
+  --font-mono: "SFMono-Regular", Consolas, "Courier New", monospace;
+  --font-body: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
 body {
-    background: #f5f5f5;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
 }
 
-.navbar-brand {
-    font-weight: 700;
-    color: #0d6efd !important;
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
 }
 
-.challenge-card .card-text {
-    font-size: 0.9rem;
+.mono {
+  font-family: var(--font-mono);
 }
 
-.challenge-card.solved {
-    border-left: 4px solid #198754;
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
 }
 
-.status-badge {
-    font-size: 1rem;
+.text-muted-cc { color: var(--text-muted) !important; }
+.text-secondary-cc { color: var(--text-secondary) !important; }
+.text-accent { color: var(--accent) !important; }
+
+/* ── Navbar ───────────────────────────────────────────────── */
+.cc-navbar {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-accent);
+  padding: 0.85rem 1.5rem;
+}
+.cc-navbar .cc-brand {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.5px;
+}
+.cc-navbar .cc-brand:hover {
+  color: var(--accent);
+  text-decoration: none;
 }
 
-.table-scoreboard th {
-    background-color: #0d6efd;
-    color: white;
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn-cc-primary {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.btn-cc-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #fff;
 }
 
-.flag-submit .btn {
-    white-space: nowrap;
+.btn-cc-outline {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.btn-cc-outline:hover {
+  background: var(--accent);
+  color: #fff;
 }
 
-/* Fix old modal leftovers (if any) – now using Bootstrap modal */
-.modal-overlay {
-    display: none; /* ensure no conflict */
+.btn-cc-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-cc-ghost:hover {
+  border-color: #666;
+  color: var(--text-primary);
+}
+
+/* ── Form controls ────────────────────────────────────────── */
+.form-control,
+.form-select,
+textarea.form-control {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+.form-control::placeholder {
+  color: var(--text-muted);
+}
+.form-control:focus,
+.form-select:focus {
+  background: var(--bg-primary);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.2rem rgba(255, 32, 32, 0.15);
+}
+.form-label {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+/* ── Cards ────────────────────────────────────────────────── */
+.cc-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1.25rem;
+}
+.cc-card-accent {
+  border-left: 2px solid var(--accent);
+}
+.cc-card-heading {
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.cc-auth-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 4px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* ── Tables ───────────────────────────────────────────────── */
+.cc-table {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cc-table table {
+  margin-bottom: 0;
+  color: var(--text-primary);
+}
+.cc-table thead {
+  background: var(--bg-card-alt);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.cc-table td,
+.cc-table th {
+  border-color: var(--border);
+  vertical-align: middle;
+}
+.cc-table tr.cc-row-me {
+  border-left: 3px solid var(--accent);
+}
+.cc-table tr.cc-row-first {
+  background: rgba(212, 175, 55, 0.08);
+}
+.cc-table tr.cc-row-first td:first-child {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── Badges ───────────────────────────────────────────────── */
+.cc-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 3px;
+  background: var(--bg-card);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+.cc-badge-accent {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.cc-badge-success {
+  color: var(--success);
+  border-color: #2a4a2a;
+  background: #142a1a;
+}
+
+/* Category badge palette (dashboard/admin) */
+.cat-web       { background: #1a2a1a; color: #6fcf6f; border-color: #2a4a2a; }
+.cat-crypto    { background: #1a1a2a; color: #6f8fcf; border-color: #2a2a4a; }
+.cat-forensics { background: #2a1a1a; color: #e05a5a; border-color: #4a2a2a; }
+.cat-pwn       { background: #2a1a2a; color: #b06fcf; border-color: #4a2a4a; }
+.cat-misc      { background: #1a1a1a; color: #999999; border-color: #444444; }
+.cat-rev       { background: #2a2a1a; color: #cfb06f; border-color: #4a4a2a; }
+
+/* ── Status indicator (event live/closed) ────────────────── */
+.cc-status-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  padding: 0.35rem 0.85rem;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cc-status-badge.live { color: var(--success); border-color: var(--success); }
+.cc-status-badge.closed { color: var(--text-muted); }
+
+.cc-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+  background: var(--text-muted);
+}
+.cc-dot.live {
+  background: var(--success);
+  animation: cc-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes cc-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55); }
+  70%  { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/* ── Hero / terminal typing animation ────────────────────── */
+.cc-hero {
+  background: var(--bg-primary);
+  padding: 5rem 1rem 4rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.cc-terminal {
+  display: inline-block;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.85rem 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  color: var(--success);
+  min-height: 1.6em;
+  min-width: min(90vw, 420px);
+  text-align: left;
+}
+
+.cc-terminal .cc-cursor {
+  display: inline-block;
+  width: 8px;
+  background: var(--success);
+  margin-left: 2px;
+  animation: cc-blink 1s step-end infinite;
+}
+@keyframes cc-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cc-hero h1 {
+  font-size: 2.75rem;
+  font-weight: 800;
+  margin-top: 2rem;
+  letter-spacing: 0.5px;
+}
+.cc-hero p.cc-subtitle {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+}
+
+/* ── Stats bar ────────────────────────────────────────────── */
+.cc-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: 4px;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+.cc-stat-card .cc-stat-value {
+  font-family: var(--font-mono);
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.cc-stat-card .cc-stat-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 0.25rem;
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+.cc-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 1.25rem 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ── Utility ──────────────────────────────────────────────── */
+.cc-empty {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2rem;
+}
+
+.cc-alert-danger {
+  background: #2a1414;
+  border: 1px solid var(--accent);
+  color: #ff6b6b;
+  border-radius: 4px;
+  padding: 0.6rem 0.9rem;
+}
+.cc-alert-success {
+  background: #142a1a;
+  border: 1px solid var(--success);
+  color: var(--success);
+  border-radius: 4px;
+  padding: 0.6rem 0.9rem;
+}
+
+/* Bootstrap modal overrides for dark theme */
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+}
+.modal-header,
+.modal-footer {
+  border-color: var(--border);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .cc-hero h1 { font-size: 2rem; }
+  .cc-hero { padding: 3.5rem 1rem 2.5rem; }
+  .cc-terminal { font-size: 0.8rem; min-width: 100%; }
+  .cc-footer { text-align: center; }
+  .cc-footer .d-flex { flex-direction: column; gap: 0.35rem; }
 }

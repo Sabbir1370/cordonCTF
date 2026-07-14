@@ -4,76 +4,112 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CordonCTF – Login</title>
-    <link
-      href="css/vendor/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body class="bg-light">
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-5">
-          <div class="card shadow">
-            <div class="card-body p-4">
-              <h2 class="text-center mb-3">🏴‍☠️ CordonCTF</h2>
-              <h4 class="text-center mb-4">Login</h4>
-              <form id="loginForm">
-                <div class="mb-3">
-                  <label for="username" class="form-label">Username</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    required
-                    autocomplete="username"
-                  />
-                </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    required
-                    autocomplete="current-password"
-                  />
-                </div>
-                <div id="errorMessage" class="alert alert-danger d-none"></div>
-                <button type="submit" class="btn btn-primary w-100">
-                  Login
-                </button>
-              </form>
-              <p class="text-center mt-3 mb-0">
-                Don't have an account? <a href="register.html">Register</a>
-              </p>
-              <p class="text-center">
-                <a href="index.html">← Back to Home</a>
-              </p>
-            </div>
+  <body>
+    <nav class="cc-navbar">
+      <a class="cc-brand" href="index.html">CordonCTF</a>
+    </nav>
+
+    <div
+      class="container d-flex align-items-center justify-content-center"
+      style="min-height: calc(100vh - 70px)"
+    >
+      <div class="row justify-content-center w-100">
+        <div class="col-md-5 col-lg-4">
+          <div class="cc-auth-card p-4">
+            <h2 class="text-center mb-1 text-accent">CordonCTF</h2>
+            <h5 class="text-center mb-4 text-muted-cc" style="font-weight: 400">
+              Login
+            </h5>
+
+            <form id="loginForm" novalidate>
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  required
+                  autocomplete="username"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  required
+                  autocomplete="current-password"
+                />
+              </div>
+
+              <div id="errorMessage" class="cc-alert-danger mb-3 d-none"></div>
+
+              <button
+                type="submit"
+                class="btn btn-cc-primary w-100"
+                id="submitBtn"
+              >
+                <span id="submitText">Login</span>
+                <span
+                  id="submitSpinner"
+                  class="spinner-border spinner-border-sm d-none"
+                  role="status"
+                ></span>
+              </button>
+            </form>
+
+            <p class="text-center mt-3 mb-0 text-secondary-cc">
+              Don't have an account? <a href="register.html">Register</a>
+            </p>
+            <p class="text-center mt-1">
+              <a
+                href="index.html"
+                class="text-secondary-cc"
+                style="text-decoration: none"
+                >← Back to Home</a
+              >
+            </p>
           </div>
         </div>
       </div>
     </div>
+
     <script src="js/vendor/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
       const form = document.getElementById("loginForm");
       const errorDiv = document.getElementById("errorMessage");
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const submitSpinner = document.getElementById("submitSpinner");
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        submitText.classList.toggle("d-none", loading);
+        submitSpinner.classList.toggle("d-none", !loading);
+      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         errorDiv.classList.add("d-none");
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
+
+        setLoading(true);
         try {
           const result = await loginUser(username, password);
           window.location.href =
             result.role === "admin" ? "admin.html" : "dashboard.html";
         } catch (err) {
-          errorDiv.textContent = err.message;
+          errorDiv.textContent = err.message || "Login failed.";
           errorDiv.classList.remove("d-none");
+        } finally {
+          setLoading(false);
         }
       });
     </script>

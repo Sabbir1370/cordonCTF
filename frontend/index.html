@@ -4,141 +4,246 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CordonCTF – Offline CTF Platform</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="css/vendor/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
-      <div class="container">
-        <a class="navbar-brand" href="index.html">🏴‍☠️ CordonCTF</a>
-        <div class="d-flex">
-          <a href="login.html" class="btn btn-outline-primary me-2">Login</a>
-          <a href="register.html" class="btn btn-primary">Register</a>
-        </div>
+    <nav
+      class="cc-navbar d-flex align-items-center justify-content-between flex-wrap"
+    >
+      <a class="cc-brand" href="index.html">CordonCTF</a>
+      <div class="d-flex align-items-center gap-2" id="navActions">
+        <a href="login.html" class="btn btn-cc-outline btn-sm">Login</a>
+        <a href="register.html" class="btn btn-cc-primary btn-sm">Register</a>
       </div>
     </nav>
 
-    <div class="container">
-      <!-- Status row -->
-      <div class="row g-3 mb-4">
-        <div class="col-md-3 col-6">
-          <div class="card text-bg-light">
-            <div class="card-body text-center">
-              <h6 class="card-title">Event Status</h6>
-              <span id="eventStatus" class="badge bg-secondary fs-6"
-                >Loading...</span
-              >
-            </div>
+    <!-- Hero -->
+    <section class="cc-hero">
+      <div class="container">
+        <div id="eventStatusBadge" class="cc-status-badge closed mb-3">
+          <span class="cc-dot"></span><span id="eventStatusText">LOADING…</span>
+        </div>
+
+        <div class="cc-terminal mono" id="terminal">
+          <span id="terminalText"></span><span class="cc-cursor">&nbsp;</span>
+        </div>
+
+        <h1>Capture The Flag</h1>
+        <p class="cc-subtitle">
+          Test your skills. Break the system. Claim the flag.
+        </p>
+
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+          <a href="register.html" class="btn btn-cc-primary btn-lg"
+            >Register Now</a
+          >
+          <a href="#scoreboard" class="btn btn-cc-outline btn-lg"
+            >View Scoreboard</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- Live stats -->
+    <section class="container py-5">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="cc-stat-card">
+            <div class="cc-stat-value" id="statParticipants">0</div>
+            <div class="cc-stat-label">Participants</div>
           </div>
         </div>
-        <div class="col-md-3 col-6">
-          <div class="card text-bg-light">
-            <div class="card-body text-center">
-              <h6 class="card-title">Participants</h6>
-              <strong id="totalParticipants">0</strong>
-            </div>
+        <div class="col-md-4">
+          <div class="cc-stat-card">
+            <div class="cc-stat-value" id="statChallenges">0</div>
+            <div class="cc-stat-label">Challenges</div>
           </div>
         </div>
-        <div class="col-md-3 col-6">
-          <div class="card text-bg-light">
-            <div class="card-body text-center">
-              <h6 class="card-title">Challenges</h6>
-              <strong id="totalChallenges">0</strong>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3 col-6">
-          <div class="card text-bg-light">
-            <div class="card-body text-center">
-              <h6 class="card-title">Solves</h6>
-              <strong id="totalSolves">0</strong>
-            </div>
+        <div class="col-md-4">
+          <div class="cc-stat-card">
+            <div class="cc-stat-value" id="statSolves">0</div>
+            <div class="cc-stat-label">Total Solves</div>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Scoreboard -->
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">🏆 Scoreboard</h5>
-        </div>
-        <div class="card-body">
-          <div id="scoreboardTable" class="table-responsive">
-            <p>Loading...</p>
-          </div>
-        </div>
+    <!-- Scoreboard preview -->
+    <section class="container pb-5" id="scoreboard">
+      <div
+        class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"
+      >
+        <h4 class="mb-0">Top Players</h4>
+        <button class="btn btn-cc-ghost btn-sm" id="viewFullBtn">
+          View Full Scoreboard
+        </button>
       </div>
-    </div>
+      <div class="cc-table table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Username</th>
+              <th>Score</th>
+              <th>Solves</th>
+            </tr>
+          </thead>
+          <tbody id="previewBody">
+            <tr>
+              <td colspan="4" class="cc-empty">Loading…</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <!-- Bootstrap JS -->
+    <!-- Footer -->
+    <footer class="cc-footer">
+      <div class="container d-flex justify-content-between">
+        <span>CordonCTF — Offline CTF Platform</span>
+        <span>Powered by CordonNet</span>
+      </div>
+    </footer>
+
     <script src="js/vendor/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
     <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        loadEventStatus();
-        loadStats();
-        loadScoreboard();
-      });
+      // Public page — no requireAuth(). Show a Dashboard link only if logged in.
+      if (typeof isLoggedIn === "function" && isLoggedIn()) {
+        const role =
+          typeof getCurrentUserRole === "function"
+            ? getCurrentUserRole()
+            : null;
+        document.getElementById("navActions").innerHTML = `
+          <a href="${role === "admin" ? "admin.html" : "dashboard.html"}" class="btn btn-cc-outline btn-sm">Dashboard</a>
+          <button onclick="logout()" class="btn btn-cc-primary btn-sm">Logout</button>
+        `;
+      }
 
+      function escapeHtml(text) {
+        return String(text ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      // ── Terminal typing effect ─────────────────────────────
+      const LINES = [
+        "> Initializing CordonCTF...",
+        "> Loading challenge modules...",
+        "> No system is safe.",
+        "> Are you ready?",
+      ];
+      const terminalEl = document.getElementById("terminalText");
+      let lineIdx = 0,
+        charIdx = 0,
+        deleting = false;
+
+      function typeLoop() {
+        const line = LINES[lineIdx];
+        if (!deleting) {
+          charIdx++;
+          terminalEl.textContent = line.slice(0, charIdx);
+          if (charIdx === line.length) {
+            deleting = false;
+            setTimeout(() => {
+              deleting = true;
+              typeLoop();
+            }, 1400);
+            return;
+          }
+          setTimeout(typeLoop, 45);
+        } else {
+          charIdx--;
+          terminalEl.textContent = line.slice(0, charIdx);
+          if (charIdx === 0) {
+            deleting = false;
+            lineIdx = (lineIdx + 1) % LINES.length;
+            setTimeout(typeLoop, 300);
+            return;
+          }
+          setTimeout(typeLoop, 20);
+        }
+      }
+      typeLoop();
+
+      // ── Event status ───────────────────────────────────────
       async function loadEventStatus() {
+        const badge = document.getElementById("eventStatusBadge");
+        const text = document.getElementById("eventStatusText");
+        const dot = badge.querySelector(".cc-dot");
         try {
           const data = await api("GET", "/api/event/status");
-          const el = document.getElementById("eventStatus");
-          el.textContent = data.status.toUpperCase();
-          el.className = `badge fs-6 ${data.status === "running" ? "bg-success" : "bg-secondary"}`;
+          const live = data.status === "running" || data.status === "live";
+          badge.classList.toggle("live", live);
+          badge.classList.toggle("closed", !live);
+          dot.classList.toggle("live", live);
+          text.textContent = live ? "EVENT LIVE" : "EVENT CLOSED";
         } catch {
-          document.getElementById("eventStatus").textContent = "Error";
+          text.textContent = "STATUS UNKNOWN";
         }
       }
 
+      // ── Live stats ─────────────────────────────────────────
       async function loadStats() {
         try {
           const stats = await api("GET", "/api/stats");
-          document.getElementById("totalParticipants").textContent =
+          document.getElementById("statParticipants").textContent =
             stats.total_participants;
-          document.getElementById("totalChallenges").textContent =
+          document.getElementById("statChallenges").textContent =
             stats.total_challenges;
-          document.getElementById("totalSolves").textContent =
+          document.getElementById("statSolves").textContent =
             stats.total_solves;
         } catch {}
       }
 
-      async function loadScoreboard() {
+      // ── Scoreboard preview (top 5) ─────────────────────────
+      async function loadScoreboardPreview() {
         try {
           const board = await api("GET", "/api/scoreboard");
-          const container = document.getElementById("scoreboardTable");
+          const body = document.getElementById("previewBody");
           if (!board.length) {
-            container.innerHTML =
-              '<div class="alert alert-info">No players yet.</div>';
+            body.innerHTML = `<tr><td colspan="4" class="cc-empty">No players yet.</td></tr>`;
             return;
           }
-          let html = `
-            <table class="table table-striped table-hover">
-              <thead class="table-primary">
-                <tr><th>#</th><th>Username</th><th>Score</th><th>Solves</th></tr>
-              </thead>
-              <tbody>
-          `;
-          board.forEach((entry) => {
-            html += `<tr>
-              <td>${entry.rank}</td>
-              <td>${entry.username}</td>
-              <td>${entry.score}</td>
-              <td>${entry.solve_count}</td>
-            </tr>`;
-          });
-          html += "</tbody></table>";
-          container.innerHTML = html;
+          const top5 = board.slice(0, 5);
+          body.innerHTML = top5
+            .map(
+              (e) => `
+            <tr class="${e.rank === 1 ? "cc-row-first" : ""}">
+              <td>#${e.rank}</td>
+              <td>${escapeHtml(e.username)}</td>
+              <td class="mono">${e.score}</td>
+              <td>${e.solve_count}</td>
+            </tr>
+          `,
+            )
+            .join("");
         } catch {
-          document.getElementById("scoreboardTable").innerHTML =
-            '<div class="alert alert-danger">Failed to load scoreboard.</div>';
+          document.getElementById("previewBody").innerHTML =
+            `<tr><td colspan="4" class="cc-empty">Failed to load scoreboard.</td></tr>`;
         }
       }
+
+      document.getElementById("viewFullBtn").addEventListener("click", () => {
+        document
+          .getElementById("scoreboard")
+          .scrollIntoView({ behavior: "smooth" });
+      });
+
+      // ── Init + auto-refresh ────────────────────────────────
+      loadEventStatus();
+      loadStats();
+      loadScoreboardPreview();
+      setInterval(() => {
+        loadStats();
+        loadScoreboardPreview();
+      }, 30000);
     </script>
   </body>
 </html>

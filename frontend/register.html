@@ -4,62 +4,103 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CordonCTF – Register</title>
-    <link
-      href="css/vendor/bootstrap.min.css"
-      rel="stylesheet"
-    />
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
-  <body class="bg-light">
-    <div class="container mt-5">
-      <div class="row justify-content-center">
-        <div class="col-md-5">
-          <div class="card shadow">
-            <div class="card-body p-4">
-              <h2 class="text-center mb-3">🏴‍☠️ CordonCTF</h2>
-              <h4 class="text-center mb-4">Create Account</h4>
-              <form id="registerForm">
-                <div class="mb-3">
-                  <label for="username" class="form-label">Username</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="username"
-                    required
-                    autocomplete="username"
-                  />
+  <body>
+    <nav class="cc-navbar">
+      <a class="cc-brand" href="index.html">CordonCTF</a>
+    </nav>
+
+    <div
+      class="container d-flex align-items-center justify-content-center"
+      style="min-height: calc(100vh - 70px)"
+    >
+      <div class="row justify-content-center w-100">
+        <div class="col-md-5 col-lg-4">
+          <div class="cc-auth-card p-4">
+            <h2 class="text-center mb-1 text-accent">CordonCTF</h2>
+            <h5 class="text-center mb-4 text-muted-cc" style="font-weight: 400">
+              Create Account
+            </h5>
+
+            <form id="registerForm" novalidate>
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  required
+                  autocomplete="username"
+                  minlength="3"
+                  maxlength="32"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  required
+                  autocomplete="new-password"
+                  minlength="8"
+                />
+                <div class="form-text text-muted-cc">
+                  At least 8 characters.
                 </div>
-                <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    required
-                    autocomplete="new-password"
-                  />
-                </div>
-                <input type="hidden" id="role" value="player" />
-                <div id="errorMessage" class="alert alert-danger d-none"></div>
-                <div
-                  id="successMessage"
-                  class="alert alert-success d-none"
-                ></div>
-                <button type="submit" class="btn btn-primary w-100">
-                  Register
-                </button>
-              </form>
-              <p class="text-center mt-3 mb-0">
-                Already have an account? <a href="login.html">Login</a>
-              </p>
-              <p class="text-center">
-                <a href="index.html">← Back to Home</a>
-              </p>
-            </div>
+              </div>
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label"
+                  >Confirm Password</label
+                >
+                <input
+                  type="password"
+                  class="form-control"
+                  id="confirmPassword"
+                  required
+                  autocomplete="new-password"
+                />
+              </div>
+              <input type="hidden" id="role" value="player" />
+
+              <div id="errorMessage" class="cc-alert-danger mb-3 d-none"></div>
+              <div
+                id="successMessage"
+                class="cc-alert-success mb-3 d-none"
+              ></div>
+
+              <button
+                type="submit"
+                class="btn btn-cc-primary w-100"
+                id="submitBtn"
+              >
+                <span id="submitText">Register</span>
+                <span
+                  id="submitSpinner"
+                  class="spinner-border spinner-border-sm d-none"
+                  role="status"
+                ></span>
+              </button>
+            </form>
+
+            <p class="text-center mt-3 mb-0 text-secondary-cc">
+              Already have an account? <a href="login.html">Login</a>
+            </p>
+            <p class="text-center mt-1">
+              <a
+                href="index.html"
+                class="text-secondary-cc"
+                style="text-decoration: none"
+                >← Back to Home</a
+              >
+            </p>
           </div>
         </div>
       </div>
     </div>
+
     <script src="js/vendor/bootstrap.bundle.min.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
@@ -67,14 +108,39 @@
       const form = document.getElementById("registerForm");
       const errorDiv = document.getElementById("errorMessage");
       const successDiv = document.getElementById("successMessage");
+      const submitBtn = document.getElementById("submitBtn");
+      const submitText = document.getElementById("submitText");
+      const submitSpinner = document.getElementById("submitSpinner");
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        submitText.classList.toggle("d-none", loading);
+        submitSpinner.classList.toggle("d-none", !loading);
+      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         errorDiv.classList.add("d-none");
         successDiv.classList.add("d-none");
+
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value;
+        const confirmPassword =
+          document.getElementById("confirmPassword").value;
         const role = document.getElementById("role").value;
+
+        if (password !== confirmPassword) {
+          errorDiv.textContent = "Passwords do not match.";
+          errorDiv.classList.remove("d-none");
+          return;
+        }
+        if (password.length < 8) {
+          errorDiv.textContent = "Password must be at least 8 characters.";
+          errorDiv.classList.remove("d-none");
+          return;
+        }
+
+        setLoading(true);
         try {
           await registerUser(username, password, role);
           successDiv.textContent = "Account created! Redirecting to login...";
@@ -83,8 +149,10 @@
             window.location.href = "login.html";
           }, 1500);
         } catch (err) {
-          errorDiv.textContent = err.message;
+          errorDiv.textContent = err.message || "Registration failed.";
           errorDiv.classList.remove("d-none");
+        } finally {
+          setLoading(false);
         }
       });
     </script>
